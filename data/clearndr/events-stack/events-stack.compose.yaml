@@ -73,6 +73,7 @@ services:
         image: ghcr.io/stamusnetworks/stamus-images/fluentd:1.16
         user: root
         container_name: {{template "base-name" .}}-fluentd-{{template "suffix-name" .}}
+        restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         command: fluentd -c /fluentd/etc/fluent.conf
         configs:
             - source: fluentd-config
