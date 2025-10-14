@@ -34,7 +34,7 @@ services:
             - source: suricata-logrotate
               target: /etc/logrotate.d.dist/suricata
         environment:
-            - SURICATA_OPTIONS= -i {{.Values.suricata.interfaces | default "dummy0"}} -vvv --set sensor-name=suricata
+            - SURICATA_OPTIONS={{- range $i, $iface := splitList "," (.Values.suricata.interfaces | default "dummy0") }} -i {{$iface}}{{- end }} -vvv --set sensor-name=suricata
         cap_add:
             - NET_ADMIN
             - SYS_NICE
