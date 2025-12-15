@@ -79,7 +79,7 @@ services:
             'chown -R {{.Release.user}}:{{.Release.group}} /containers-data/scirius &&
             chown -R {{.Release.user}}:{{.Release.group}} /containers-data/suricata/rules'
         ]
-        restart: {{ .Values.globals.restartmode | default "on-failure" }}
+        restart: "no"
         volumes:
             - {{ .Release.location | default ".." }}/containers-data:/containers-data
         depends_on:
@@ -129,7 +129,7 @@ services:
               target: /setup/hot_warm_delete.json
         volumes:
             - setup-ism-tfstate:/state
-        restart: "on-failure"
+        restart: "no"
         networks:
             network:
         depends_on:
@@ -148,7 +148,7 @@ services:
                     "logger.org.opensearch.indexmanagement": "DEBUG"
                 }
             }'
-        restart: "on-failure"
+        restart: "no"
         depends_on:
             opensearch-dashboards:
                 condition: service_healthy
