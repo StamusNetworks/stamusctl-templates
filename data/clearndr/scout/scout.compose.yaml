@@ -1,0 +1,20 @@
+{{- if (.Values.scout) }}
+configs:
+    scout-config:
+        file: scout-config.json
+
+services:
+    scout:
+        image: {{ template "image-name" (.Values.scout) }}
+        container_name: {{template "base-name" .}}-scout-{{ .Release.seed }}
+        restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
+        configs:
+            - source: scout-config
+              target: /usr/share/nginx/html/config.json
+        {{- if or .Values.global.exposePorts (.Values.scout).openPort }}
+        ports:
+            - {{ (.Values.scout).port | default "8080" }}:80
+        {{- end }}
+        networks:
+            network:
+{{- end }}

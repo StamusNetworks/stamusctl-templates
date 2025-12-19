@@ -88,6 +88,7 @@ services:
         user: root
         container_name: {{template "base-name" .}}-fluentd-{{ .Release.seed }}
         command: fluentd -c /fluentd/etc/fluent.conf
+        restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         configs:
             - source: fluentd-config
               target: /fluentd/etc/fluent.conf
@@ -105,6 +106,7 @@ services:
         container_name: {{template "base-name" .}}-socat-{{ .Release.seed }}
         user: root
         command: UNIX-LISTEN:/var/log/suricata/tls_buffer.sock TCP:fluentd:20001
+        restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         volumes:
             - suricata-socket:/var/run/suricata/
         networks:
@@ -115,6 +117,7 @@ services:
         container_name: {{template "base-name" .}}-socat-readpcap-{{ .Release.seed }}
         user: root
         command: UNIX-LISTEN:/var/log/suricata/tls_buffer.sock TCP:fluentd:20001
+        restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         volumes:
             - {{ .Release.location }}/containers-data/suricata/logs:/var/log/suricata
         networks:

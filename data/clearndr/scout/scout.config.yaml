@@ -1,0 +1,24 @@
+scout:
+  type: optional
+  usage: Enable Scout instance ?
+  default: true
+  registry:
+    type: string
+    usage: Image registry where to find scout image
+    default: ghcr.io/stamusnetworks/scout
+  version:
+    type: string
+    usage: Scout version to install
+    default: main-6594a470
+  openPort:
+    type: bool
+    usage: Open port for Scout ?
+    default: false
+  port:
+    type: int
+    usage: Port to expose Scout on
+    default: 8080
+  apiUrl:
+    type: string
+    usage: API URL for Scout backend
+    default: https://localhost

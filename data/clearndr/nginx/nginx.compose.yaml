@@ -58,6 +58,10 @@ services:
             {{- end }}
             scirius: #we need to wait for scirius to populate the static files
                 condition: service_healthy
+            {{- if .Values.scout }}
+            scout:
+                condition: service_started
+            {{- end }}
         ports:
         	{{- if .Values.nginx.ssl.enabled }}
             - 443:443

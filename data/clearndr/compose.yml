@@ -28,5 +28,6 @@ include:
     - events-stack/events-stack.compose.yaml
     - nginx/nginx.compose.yaml
     - scirius/scirius.compose.yaml
+    - scout/scout.compose.yaml
     - suricata/suricata.compose.yaml
     - utils/utils.compose.yaml

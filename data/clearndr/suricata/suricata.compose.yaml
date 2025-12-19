@@ -26,6 +26,12 @@ services:
         container_name: {{template "base-name" .}}-suricata-{{ .Release.seed }}
         entrypoint: /new_entrypoint.sh
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
+        healthcheck:
+            test: ["CMD-SHELL", "test -S /var/run/suricata/suricata-command.socket"]
+            interval: 10s
+            timeout: 5s
+            retries: 30
+            start_period: 60s
         configs:
             - source: suricata-new-entrypoint
               target: /new_entrypoint.sh
