@@ -9,7 +9,7 @@ scout:
   version:
     type: string
     usage: Scout version to install
-    default: main-6594a470
+    default: 1.0.0
   openPort:
     type: bool
     usage: Open port for Scout ?
