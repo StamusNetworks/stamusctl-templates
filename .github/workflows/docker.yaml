@@ -6,7 +6,7 @@ on:
 
 env:
     REGISTRY: ghcr.io
-    IMAGE_NAME: stamusctl-templates
+    IMAGE_NAME: ${{ github.repository }}
     GITHUB_TOKEN: ${{ secrets.PUSH }}
 
 jobs:
