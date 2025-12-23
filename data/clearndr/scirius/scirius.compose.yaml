@@ -57,7 +57,7 @@ services:
             - ELASTICSEARCH_LOGSTASH_INDEX_INJECTED={{ .Values.opensearch.index | default "logstash" }}-
             - ELASTICSEARCH_LOGSTASH_ALERT_INDEX={{ .Values.opensearch.index | default "logstash" }}-alert-
             - STAMUSCTL_SEED={{ .Release.seed }}
-            - SCIRIUS_VERSION=1.0.0
+            - SCIRIUS_VERSION=1.1.0
         configs:
             - source: scirius-start-sh
               target: /code/docker/scirius/bin/start-scirius.sh
