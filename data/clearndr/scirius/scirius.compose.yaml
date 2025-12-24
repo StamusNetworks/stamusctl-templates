@@ -86,7 +86,7 @@ services:
                 condition: service_healthy
 
     suri-reloader:
-        image: {{ template "image-name" .Values.scirius }}
+        image: {{ .Values.scirius.image | default (printf "%s:%s" .Values.scirius.registry .Values.scirius.sciriusversion )}}
         container_name: {{template "base-name" .}}-suri-reloader-{{ .Release.seed }}
         entrypoint: /start-suri-reloader.sh
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
@@ -116,7 +116,7 @@ services:
 
     {{- if and .Values.scirius .Values.scirius.celery .Values.scirius.celery.worker }}
     celery-worker:
-        image: {{ template "image-name" .Values.scirius }}
+        image: {{ .Values.scirius.image | default (printf "%s:%s" .Values.scirius.registry .Values.scirius.sciriusversion )}}
         container_name: {{template "base-name" .}}-celery-worker-{{ .Release.seed }}
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         working_dir: /code
@@ -154,7 +154,7 @@ services:
 
     {{- if and .Values.scirius .Values.scirius.celery .Values.scirius.celery.beat }}
     celery-beat:
-        image: {{ template "image-name" .Values.scirius }}
+        image: {{ .Values.scirius.image | default (printf "%s:%s" .Values.scirius.registry .Values.scirius.sciriusversion )}}
         container_name: {{template "base-name" .}}-celery-beat-{{ .Release.seed }}
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         working_dir: /code
@@ -192,7 +192,7 @@ services:
 
     {{- if and .Values.scirius .Values.scirius.celery .Values.scirius.celery.flower }}
     celery-flower:
-        image: {{ template "image-name" .Values.scirius }}
+        image: {{ .Values.scirius.image | default (printf "%s:%s" .Values.scirius.registry .Values.scirius.sciriusversion )}}
         container_name: {{template "base-name" .}}-celery-flower-{{ .Release.seed }}
         restart: always
         command: celery --broker=amqp://guest:guest@rabbitmq:5672// flower -A suricata
