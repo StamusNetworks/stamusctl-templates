@@ -18,7 +18,7 @@ services:
 
     {{- if .Values.scirius }}
     scirius:
-        image: {{ template "image-name" .Values.scirius }}
+        image: {{ .Values.scirius.image | default (printf "%s:%s" .Values.scirius.registry .Values.scirius.sciriusversion )}}
         container_name: {{template "base-name" .}}-scirius-{{ .Release.seed }}
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         healthcheck:
