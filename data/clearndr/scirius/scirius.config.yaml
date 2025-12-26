@@ -13,7 +13,7 @@ scirius:
   version:
     type: string
     usage: Scirius internal version
-    default: 1.1.0
+    default: 1.1.1
   debug:
     type: bool
     usage: Enable debug mode
