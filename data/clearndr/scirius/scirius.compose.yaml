@@ -65,7 +65,7 @@ services:
             - scirius-static:/static/
             - scirius-data:/data/
             - suricata-run:/var/run/suricata
-            - suricata-etc:/etc/suricata
+            - {{ .Release.location }}/containers-data/suricata/etc:/etc/suricata:ro
             - scirius-tmp:/tmp
             - {{ .Release.location }}/containers-data/scirius/logs/:/logs/
             - {{ .Release.location }}/containers-data/suricata/rules:/rules
@@ -134,7 +134,7 @@ services:
             - SCIRIUS_VERSION={{ .Values.scirius.version }}
         volumes:
             - scirius-data:/data/
-            - suricata-etc:/etc/suricata
+            - {{ .Release.location }}/containers-data/suricata/etc:/etc/suricata:ro
             - scirius-tmp:/tmp
             - {{ .Release.location }}/containers-data/scirius/logs/:/logs/
             - {{ .Release.location }}/containers-data/suricata/rules:/rules
@@ -174,7 +174,7 @@ services:
             - SCIRIUS_VERSION={{ .Values.scirius.version }}
         volumes:
             - scirius-data:/data/
-            - suricata-etc:/etc/suricata
+            - {{ .Release.location }}/containers-data/suricata/etc:/etc/suricata:ro
             - scirius-tmp:/tmp
             - {{ .Release.location }}/containers-data/scirius/logs/:/logs/
             - {{ .Release.location }}/containers-data/suricata/rules:/rules

@@ -13,8 +13,6 @@ volumes:
         name: suricata-run-{{ .Release.seed }}
     suricata-logs:
         name: suricata-logs-{{ .Release.seed }}
-    suricata-etc:
-        name: suricata-etc-{{ .Release.seed }}
     {{ if .Values.suricata.unixSocket.enabled -}}
     suricata-socket:
         name: suricata-socket-{{ .Release.seed }}
@@ -47,7 +45,6 @@ services:
         network_mode: host
         volumes:
             - suricata-run:/var/run/suricata/
-            - suricata-etc:/etc/suricata
             {{- if .Values.suricata.unixSocket.enabled }}
             - suricata-socket:/var/run/suricata/
             {{- else }}
