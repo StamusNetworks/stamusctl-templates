@@ -21,4 +21,4 @@ scout:
   apiUrl:
     type: string
     usage: API URL for Scout backend
-    default: https://localhost
+    default: " "
