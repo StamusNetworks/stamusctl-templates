@@ -95,6 +95,7 @@ services:
         environment:
             - SURICATA_UNIX_SOCKET=/var/run/suricata/suricata-command.socket
         healthcheck:
+            test: ["CMD-SHELL", "grep -q suri_reloader.py /proc/1/cmdline || exit 1"]
             interval: 10s
             timeout: 1s
             retries: 5
