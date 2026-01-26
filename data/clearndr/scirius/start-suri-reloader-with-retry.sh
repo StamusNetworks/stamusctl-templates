@@ -18,8 +18,5 @@ while [ ! -S "${SURICATA_UNIX_SOCKET}" ]; do
 done
 
 echo "Suricata socket is ready, starting suri_reloader"
-SURICATA_UNIX_SOCKET=${SURICATA_UNIX_SOCKET} python /code/docker/scirius/suricata/scripts/suri_reloader
-if [ $? -ne 0 ]; then
-    echo "Failed to start suri_reloader"
-    exit 1
-fi
+# Use our custom suri_reloader that runs in foreground
+exec python3 /usr/local/bin/suri_reloader.py

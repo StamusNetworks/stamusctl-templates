@@ -3,6 +3,8 @@ configs:
         file: start-scirius.sh
     suricata-reloader-start-sh:
         file: start-suri-reloader-with-retry.sh
+    suri-reloader-py:
+        file: suri_reloader.py
 
 volumes:
     scirius-data: #for scirius data persistency
@@ -57,7 +59,7 @@ services:
             - ELASTICSEARCH_LOGSTASH_INDEX_INJECTED={{ .Values.opensearch.index | default "logstash" }}-
             - ELASTICSEARCH_LOGSTASH_ALERT_INDEX={{ .Values.opensearch.index | default "logstash" }}-alert-
             - STAMUSCTL_SEED={{ .Release.seed }}
-            - SCIRIUS_VERSION={{ .Values.scirius.version }}
+            - SCIRIUS_VERSION=1.1.3
         configs:
             - source: scirius-start-sh
               target: /code/docker/scirius/bin/start-scirius.sh
@@ -100,6 +102,9 @@ services:
         configs:
             - source: suricata-reloader-start-sh
               target: /start-suri-reloader.sh
+            - source: suri-reloader-py
+              target: /usr/local/bin/suri_reloader.py
+              mode: 0755
         volumes:
             - suricata-run:/var/run/suricata
             - {{ .Release.location }}/containers-data/scirius/logs/:/logs
@@ -131,7 +136,7 @@ services:
             - DATABASE_HOST=db
             - DATABASE_PORT=5432
             - STAMUSCTL_SEED={{ .Release.seed }}
-            - SCIRIUS_VERSION={{ .Values.scirius.version }}
+            - SCIRIUS_VERSION=1.1.3
         volumes:
             - scirius-data:/data/
             - {{ .Release.location }}/containers-data/suricata/etc:/etc/suricata:ro
@@ -171,7 +176,7 @@ services:
             - DATABASE_HOST=db
             - DATABASE_PORT=5432
             - STAMUSCTL_SEED={{ .Release.seed }}
-            - SCIRIUS_VERSION={{ .Values.scirius.version }}
+            - SCIRIUS_VERSION=1.1.3
         volumes:
             - scirius-data:/data/
             - {{ .Release.location }}/containers-data/suricata/etc:/etc/suricata:ro
