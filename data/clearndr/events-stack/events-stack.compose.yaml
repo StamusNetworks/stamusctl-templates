@@ -37,7 +37,7 @@ services:
             - OPENSEARCH_INITIAL_ADMIN_PASSWORD=YH8pq2lqNSnVEQZ
         volumes:
             - {{ .Values.opensearch.datapath | default "opensearch-data" }}:/usr/share/opensearch/data
-        {{- if or .Values.global.exposePorts .Values.opensearch.openPort }}
+        {{- if or .Values.global.exposeports .Values.opensearch.openport }}
         ports:
             - 9200:9200
         {{- end }}
