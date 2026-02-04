@@ -25,9 +25,6 @@
                 "name": "warm",
                 "actions": [
                     {
-                        "close": {}
-                    },
-                    {
                         "read_only": {}
                     }
                 ],
