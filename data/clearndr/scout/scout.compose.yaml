@@ -5,7 +5,7 @@ configs:
 
 services:
     scout:
-        image: {{ template "image-name" (.Values.scout) }}
+        image: {{ printf "%s:%s" (.Values.scout.registry | default "ghcr.io/stamusnetworks/scout") (.Values.scout.version | default "1.0.0") }}
         container_name: {{template "base-name" .}}-scout-{{ .Release.seed }}
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         configs:
