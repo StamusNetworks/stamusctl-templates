@@ -59,7 +59,6 @@ services:
               target: /start-arkimeviewer.sh
         volumes:
             - {{ .Release.location }}/containers-data/suricata/logs:/suricata-logs
-            - {{ .Release.location }}/containers-data/arkime/logs:/opt/arkime/logs
             - {{ .Release.location }}/fpc:/suricata-logs/fpc
             - arkime-logs:/opt/arkime/logs
             - arkime-pcap:/opt/arkime/raw
