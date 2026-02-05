@@ -98,7 +98,15 @@ services:
             [
                 sh,
                 -c,
-                "echo '*	*	 *	*	 *	run-parts /etc/periodic/1min' >> /etc/crontabs/root && crond -f -l 8",
+                "mkdir -p /etc/periodic/1min /etc/periodic/15min /etc/periodic/hourly /etc/periodic/daily /etc/periodic/weekly /etc/periodic/monthly && \
+                 chmod +x /etc/periodic/*/* 2>/dev/null || true && \
+                 echo '*	*	*	*	*	run-parts /etc/periodic/1min' >> /etc/crontabs/root && \
+                 echo '*/15	*	*	*	*	run-parts /etc/periodic/15min' >> /etc/crontabs/root && \
+                 echo '0	*	*	*	*	run-parts /etc/periodic/hourly' >> /etc/crontabs/root && \
+                 echo '0	2	*	*	*	run-parts /etc/periodic/daily' >> /etc/crontabs/root && \
+                 echo '0	3	*	*	6	run-parts /etc/periodic/weekly' >> /etc/crontabs/root && \
+                 echo '0	5	1	*	*	run-parts /etc/periodic/monthly' >> /etc/crontabs/root && \
+                 crond -f -l 8",
             ]
         restart: {{ .Values.globals.restartmode | default "on-failure" }}
         configs:
