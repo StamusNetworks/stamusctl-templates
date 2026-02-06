@@ -13,9 +13,10 @@ RUN CGO_ENABLED=1 make
 FROM busybox:latest as BUNDLE
 
 ARG path=selks
+ARG TEMPLATE_VERSION=1.0.0
 
 COPY /data/$path /data
-COPY /version.txt /data/version
+RUN echo "${TEMPLATE_VERSION}" > /data/version
 COPY --from=Builder /src/dist /sbin/
 
 ENTRYPOINT [ "bin/sh", "-c" ]
