@@ -1,14 +1,31 @@
 includes: ./db/db.config.yaml
-    ./events-stack/opensearch.config.yaml
-    ./nginx/nginx.config.yaml
-    ./suricata/suricata.config.yaml
-    ./scirius/scirius.config.yaml
-    ./scout/scout.config.yaml
-    ./utils/utils.config.yaml
+  ./events-stack/opensearch.config.yaml
+  ./nginx/nginx.config.yaml
+  ./suricata/suricata.config.yaml
+  ./scirius/scirius.config.yaml
+  ./scout/scout.config.yaml
+  ./utils/utils.config.yaml
 
 globals:
-    restartmode:
-        type: string
-        usage: Restart mode for all services
-        default: unless-stopped
-        choices: restart
+  restartmode:
+    type: string
+    usage: Restart mode for all services
+    default: unless-stopped
+    choices: restart
+  proxy:
+    enabled:
+      type: bool
+      usage: Enable proxy support for all services
+      default: false
+    http:
+      type: string
+      usage: HTTP proxy URL (e.g., http://proxy.company.com:3128)
+      default: ""
+    https:
+      type: string
+      usage: HTTPS proxy URL (e.g., http://proxy.company.com:3128)
+      default: ""
+    no_proxy:
+      type: string
+      usage: Comma-separated list of hosts that should not use proxy
+      default: "localhost,127.0.0.1,opensearch,opensearch-dashboards,scirius,scout,nginx"
