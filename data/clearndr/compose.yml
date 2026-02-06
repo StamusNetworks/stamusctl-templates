@@ -23,6 +23,8 @@ networks:
 {{- fail (printf "You are using %s. Please use version 1.0.3 or above" .Release.service) }}
 {{- end }}
 
+name: clearndr-{{ .Release.seed }}
+
 include:
     - db/db.compose.yaml
     - events-stack/events-stack.compose.yaml
