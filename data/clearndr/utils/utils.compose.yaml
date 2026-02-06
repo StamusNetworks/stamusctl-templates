@@ -128,7 +128,20 @@ services:
             [
                 "terraform init -input=false && terraform apply -input=false -auto-approve -state=/state/terraform.tfstate",
             ]
-        working_dir: /setup
+        working_dir: /setup{{- if .Values.globals.proxy.enabled}}
+        environment:
+            {{- if .Values.globals.proxy.http}}
+            - http_proxy={{.Values.globals.proxy.http}}{{end}}
+            {{- if .Values.globals.proxy.https}}
+            - https_proxy={{.Values.globals.proxy.https}}{{end}}
+            {{- if .Values.globals.proxy.no_proxy}}
+            - no_proxy={{.Values.globals.proxy.no_proxy}}{{end}}
+            {{- if .Values.globals.proxy.http}}
+            - HTTP_PROXY={{.Values.globals.proxy.http}}{{end}}
+            {{- if .Values.globals.proxy.https}}
+            - HTTPS_PROXY={{.Values.globals.proxy.https}}{{end}}
+            {{- if .Values.globals.proxy.no_proxy}}
+            - NO_PROXY={{.Values.globals.proxy.no_proxy}}{{end}}{{end}}
         configs:
             - source: ism-tf
               target: /setup/main.tf
