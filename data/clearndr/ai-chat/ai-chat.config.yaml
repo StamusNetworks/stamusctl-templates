@@ -1,0 +1,41 @@
+aichat:
+  enabled:
+    type: bool
+    usage: Enable AI Chat (LibreChat) functionality
+    default: false
+  openPort:
+    type: bool
+    usage: Expose Open WebUI port
+    default: true
+  port:
+    type: string
+    usage: Port to expose Open WebUI on host
+    default: "3000"
+  openai_api_key:
+    type: string
+    usage: OpenAI API key for GPT-4/GPT-4o models
+    default: ""
+  anthropic_api_key:
+    type: string
+    usage: Anthropic API key for Claude models
+    default: ""
+  google_api_key:
+    type: string
+    usage: Google API key for Gemini models
+    default: ""
+  ollama_url:
+    type: string
+    usage: Ollama API URL for local/private models
+    default: "http://host.docker.internal:11434"
+  default_user_email:
+    type: string
+    usage: Default user email (auto-created on first start)
+    default: "admin@clearndr.local"
+  default_user_password:
+    type: string
+    usage: Default user password (minimum 8 characters)
+    default: "clearndr"
+  default_user_name:
+    type: string
+    usage: Default user display name
+    default: "Admin"
