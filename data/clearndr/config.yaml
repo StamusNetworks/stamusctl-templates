@@ -5,6 +5,7 @@ includes: ./db/db.config.yaml
   ./scirius/scirius.config.yaml
   ./scout/scout.config.yaml
   ./utils/utils.config.yaml
+  ./ai-chat/ai-chat.config.yaml
 
 globals:
   restartmode:

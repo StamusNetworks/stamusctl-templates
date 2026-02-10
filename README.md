@@ -20,6 +20,7 @@ The `clearndr` template deploys Clear NDR Community with the following component
 - **OpenSearch Dashboards**: Data visualization interface
 - **Arkime**: Network packet capture and analysis
 - **Evebox**: Event and alert management
+- **AI Chat (LibreChat)**: AI-powered chat interface (optional)
 - **NGINX**: Web proxy and SSL termination
 
 ## Template Structure
@@ -39,6 +40,15 @@ data/
 
 | Key                                 | Default                                                                  | Usage                                                                                                                            |
 | ----------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| aichat                              | false                                                                    | Enable AI Chat (LibreChat) functionality                                                                                         |
+| aichat.openPort                     | true                                                                     | Expose AI Chat port                                                                                                              |
+| aichat.port                         | 3000                                                                     | Port to expose AI Chat on host                                                                                                   |
+| aichat.anthropic_api_key            |                                                                          | Anthropic API key for Claude models                                                                                              |
+| aichat.openai_api_key               |                                                                          | OpenAI API key for GPT-4/GPT-4o models                                                                                           |
+| aichat.google_api_key               |                                                                          | Google API key for Gemini models                                                                                                 |
+| aichat.default_user_email           | admin@clearndr.local                                                     | Default user email (auto-created on first start)                                                                                 |
+| aichat.default_user_password        | clearndr                                                                 | Default user password (minimum 8 characters)                                                                                     |
+| aichat.default_user_name            | Admin                                                                    | Default user display name                                                                                                        |
 | arkime.openport                     | false                                                                    | Open port for Arkime Viewer ?                                                                                                    |
 | cron.logrotate.enabled              | true                                                                     | Enable logrotate for Suricata logs                                                                                               |
 | cron.logrotate.period               | daily                                                                    | Logrotate period (`1min`, `daily`, `weekly`, `monthly`)                                                                          |

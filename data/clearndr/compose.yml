@@ -33,3 +33,4 @@ include:
     - scout/scout.compose.yaml
     - suricata/suricata.compose.yaml
     - utils/utils.compose.yaml
+    - ai-chat/ai-chat.compose.yaml
