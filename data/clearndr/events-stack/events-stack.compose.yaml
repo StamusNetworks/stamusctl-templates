@@ -21,7 +21,7 @@ volumes:
 
 services:
     opensearch:
-        image: opensearchproject/opensearch:2.18.0
+        image: opensearchproject/opensearch:3.3.1
         container_name: {{template "base-name" .}}-opensearch-{{ .Release.seed }}
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         healthcheck:
@@ -49,7 +49,10 @@ services:
             network:
 
     opensearch-dashboards:
-        image: ghcr.io/stamusnetworks/stamus-images/opensearch-dashboards:2.18
+        # OpenSearch 3.x requires Dashboards 3.x for compatibility
+        # Using official image until custom 3.3 image is available
+        image: opensearchproject/opensearch-dashboards:3.3.0
+        # Custom image: ghcr.io/stamusnetworks/stamus-images/opensearch-dashboards:3.3
         # build:
         #     context: .
         #     dockerfile: Dockerfile.osd
