@@ -1,0 +1,229 @@
+{{- if .Values.aichat.enabled }}
+configs:
+  librechat-config-template:
+    file: librechat.yaml.template
+  nginx-proxy-template:
+    file: nginx-mcp-proxy.conf.template
+  init-user-script:
+    file: init-user.sh
+  create-user-script:
+    file: create-default-user.js
+  create-scirius-token-script:
+    file: create-scirius-token.sh
+  librechat-start-script:
+    file: start-librechat.sh
+
+volumes:
+  librechat-data:
+    name: librechat-data-{{ .Release.seed }}
+  librechat-shared:
+    name: librechat-shared-{{ .Release.seed }}
+  librechat-mongo-data:
+    name: librechat-mongo-data-{{ .Release.seed }}
+
+services:
+  librechat-init:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: {{template "base-name" .}}-librechat-init-{{ .Release.seed }}
+    restart: "no"
+
+    environment:
+      - MONGO_URI=mongodb://librechat-mongo:27017/LibreChat
+      - DEFAULT_USER_EMAIL={{ .Values.aichat.default_user_email | default "admin@clearndr.local" }}
+      - DEFAULT_USER_PASSWORD={{ .Values.aichat.default_user_password | default "clearndr" }}
+      - DEFAULT_USER_NAME={{ .Values.aichat.default_user_name | default "Admin" }}
+
+    command: ["/bin/sh", "/init-user.sh"]
+
+    configs:
+      - source: init-user-script
+        target: /init-user.sh
+        mode: 0755
+      - source: create-user-script
+        target: /create-default-user.js
+        mode: 0644
+
+    networks:
+      network:
+
+    depends_on:
+      librechat-mongo:
+        condition: service_healthy
+
+  scirius-token-init:
+    image: {{ .Values.scirius.image | default (printf "%s:%s" .Values.scirius.registry .Values.scirius.sciriusversion )}}
+    container_name: {{template "base-name" .}}-scirius-token-init-{{ .Release.seed }}
+    restart: "no"
+
+    environment:
+      - SCIRIUS_URL=http://scirius:8000
+      - SCIRIUS_USER={{ .Values.scirius.superuser.username | default "clearndr" }}
+      - TOKEN_FILE=/shared/scirius-token
+      - DATABASE_TYPE=pg
+      - DATABASE_NAME={{ .Values.db.database | default "selks" }}
+      - DATABASE_USERNAME={{ .Values.db.username | default "selks" }}
+      - DATABASE_PASSWORD={{ .Values.db.password | default "selks" }}
+      - DATABASE_HOST={{ .Values.db.host | default "db" }}
+      - DATABASE_PORT={{ .Values.db.port | default "5432" }}
+
+    command: ["/bin/bash", "/create-scirius-token.sh"]
+
+    configs:
+      - source: create-scirius-token-script
+        target: /create-scirius-token.sh
+        mode: 0755
+
+    volumes:
+      - librechat-shared:/shared
+
+    networks:
+      network:
+
+    depends_on:
+      scirius:
+        condition: service_healthy
+
+  mcp-proxy:
+    image: nginx:alpine
+    container_name: {{template "base-name" .}}-mcp-proxy-{{ .Release.seed }}
+    restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
+
+    volumes:
+      - librechat-shared:/shared:ro
+
+    configs:
+      - source: nginx-proxy-template
+        target: /app/nginx-mcp-proxy.conf.template
+
+    command: >
+      sh -c "
+      echo 'Waiting for Scirius token...';
+      timeout=60;
+      count=0;
+      while [ ! -f /shared/scirius-token ]; do
+        count=$$((count + 1));
+        if [ $$count -ge $$timeout ]; then
+          echo 'ERROR: Token not found after 60s';
+          exit 1;
+        fi;
+        sleep 1;
+      done;
+      TOKEN=$$(cat /shared/scirius-token);
+      echo 'Generating nginx config from template...';
+      sed \"s/__SCIRIUS_TOKEN__/$$TOKEN/g\" /app/nginx-mcp-proxy.conf.template > /etc/nginx/conf.d/default.conf;
+      echo 'Nginx config generated successfully';
+      nginx -g 'daemon off;'
+      "
+
+    networks:
+      network:
+
+    depends_on:
+      scirius:
+        condition: service_healthy
+      scirius-token-init:
+        condition: service_completed_successfully
+
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --spider --quiet http://127.0.0.1:8080/ || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  librechat:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: {{template "base-name" .}}-librechat-{{ .Release.seed }}
+    restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
+    entrypoint: ["/bin/sh", "/start-librechat.sh"]
+
+    environment:
+      # LLM API Keys (set via environment or values)
+      - ANTHROPIC_API_KEY={{ .Values.aichat.anthropic_api_key | default "" }}
+      - OPENAI_API_KEY={{ .Values.aichat.openai_api_key | default "" }}
+      - GOOGLE_KEY={{ .Values.aichat.google_api_key | default "" }}
+      - GOOGLE_MODELS=gemini-3-flash-preview,gemini-3-pro-preview,gemini-3-pro-image-preview
+
+      # MongoDB (LibreChat requirement)
+      - MONGO_URI=mongodb://librechat-mongo:27017/LibreChat
+
+      # Application Settings
+      - HOST=0.0.0.0
+      - PORT=3000
+
+      # Security Keys (required by LibreChat)
+      - JWT_SECRET={{ .Values.aichat.jwt_secret | default (randAlphaNum 32) }}
+      - JWT_REFRESH_SECRET={{ .Values.aichat.jwt_refresh_secret | default (randAlphaNum 32) }}
+      - CREDS_KEY={{ .Values.aichat.creds_key | default (randAlphaNum 32) }}
+      - CREDS_IV={{ .Values.aichat.creds_iv | default (randAlphaNum 32) }}
+
+      # Authentication - DISABLED (using nginx proxy auth)
+      - ALLOW_REGISTRATION=false
+      - ALLOW_SOCIAL_LOGIN=false
+      - ALLOW_SOCIAL_REGISTRATION=false
+      - SESSION_EXPIRY=1000000000
+      - REFRESH_TOKEN_EXPIRY=1000000000
+
+      # Default user (no login required)
+      - DEFAULT_USER=user@clearndr.local
+      - DEFAULT_PASSWORD={{ .Values.aichat.default_password | default (randAlphaNum 32) }}
+
+      # MCP Configuration loaded from file
+      - CONFIG_PATH=/app/librechat.yaml
+
+      # UI Customization
+      - APP_TITLE=Clear NDR AI Assistant
+      - HELP_AND_FAQ_URL=https://docs.stamus-networks.com/
+
+    configs:
+      - source: librechat-config-template
+        target: /app/librechat.yaml.template
+      - source: nginx-proxy-template
+        target: /app/nginx-mcp-proxy.conf.template
+      - source: librechat-start-script
+        target: /start-librechat.sh
+        mode: 0755
+
+    volumes:
+      - librechat-data:/app/client/public/images
+      - librechat-shared:/shared:ro
+
+    ports:
+      - "{{ .Values.aichat.port | default "3000" }}:3000"
+
+    networks:
+      network:
+
+    depends_on:
+      librechat-mongo:
+        condition: service_healthy
+      mcp-proxy:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+
+    healthcheck:
+      test: ['CMD-SHELL', 'curl --fail http://localhost:3000/api/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  librechat-mongo:
+    image: mongo:7.0
+    container_name: {{template "base-name" .}}-librechat-mongo-{{ .Release.seed }}
+    restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
+
+    volumes:
+      - librechat-mongo-data:/data/db
+
+    networks:
+      network:
+
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+{{- end }}
