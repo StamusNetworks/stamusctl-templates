@@ -1,0 +1,92 @@
+name: CI
+
+on:
+    pull_request:
+    workflow_dispatch:
+        inputs:
+            pcap_url:
+                description: "URL to download test PCAP file (optional)"
+                required: false
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install just
+              uses: extractions/setup-just@v2
+
+            - name: Install hadolint
+              run: |
+                  curl -sL "https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint
+                  chmod +x /usr/local/bin/hadolint
+
+            - name: Lint
+              run: just lint
+
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                template: [clearndr, tests]
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install just
+              uses: extractions/setup-just@v2
+
+            - name: Setup Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version-file: bin/${{ matrix.template }}/pre-run/go.mod
+
+            - name: Build hooks
+              run: just build-hooks ${{ matrix.template }}
+
+            - name: Build image
+              run: just build-image ${{ matrix.template }}
+
+    integration:
+        needs: [lint, build]
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install just
+              uses: extractions/setup-just@v2
+
+            - name: Install bats
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y bats
+
+            - name: Install stamusctl
+              run: |
+                  LATEST=$(curl -s https://api.github.com/repos/StamusNetworks/stamusctl/releases/latest | grep tag_name | cut -d '"' -f 4)
+                  curl -sL "https://github.com/StamusNetworks/stamusctl/releases/download/${LATEST}/stamusctl-linux-amd64" -o /usr/local/bin/stamusctl
+                  chmod +x /usr/local/bin/stamusctl
+
+            - name: Download test PCAP (if provided)
+              if: github.event.inputs.pcap_url != ''
+              run: |
+                  mkdir -p ~/Downloads
+                  curl -sL "${{ github.event.inputs.pcap_url }}" -o ~/Downloads/test.pcap
+
+            - name: Check prerequisites
+              run: just test-check
+
+            - name: Run integration tests
+              run: just test
+
+            - name: Collect logs on failure
+              if: failure()
+              run: |
+                  just test-status || true
+                  just test-logs || true
+
+            - name: Teardown
+              if: always()
+              run: just test-teardown || true
