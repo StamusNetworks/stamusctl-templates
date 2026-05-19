@@ -1,0 +1,143 @@
+# Integration test orchestration for stamusctl-public-templates
+# Usage: just test           # Full suite
+#        just test-opensearch # Single test group
+#        just teardown        # Clean up
+
+set dotenv-load := true
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+# Environment configuration
+export STAMUSCTL_BIN := env("STAMUSCTL_BIN", "stamusctl")
+export TEMPLATE_PATH := env("TEMPLATE_PATH", justfile_directory() / "../data/clearndr")
+export TEST_CONFIG := env("TEST_CONFIG", justfile_directory() / "config")
+export PCAP_FILE := env("PCAP_FILE", justfile_directory() / "fixtures/eternalromance-meterpreter.pcap")
+export STARTUP_TIMEOUT := env("STARTUP_TIMEOUT", "300")
+export INDEX_WAIT := env("INDEX_WAIT", "30")
+
+# Default network interface for suricata (override with SURICATA_IFACE=eth0)
+suricata_iface := env("SURICATA_IFACE", "lo")
+
+# Optional scirius image override (e.g., SCIRIUS_IMAGE=scirius:latest for local builds)
+scirius_image := env("SCIRIUS_IMAGE", "")
+
+bats := "bats"
+bats_flags := "--timing"
+integration := justfile_directory() / "integration"
+
+# Build extra args string from optional overrides
+_scirius_arg := if scirius_image != "" { "scirius.image=" + scirius_image } else { "" }
+
+# --- Main recipes ---
+
+# Run full test suite: deploy → test → teardown
+test: deploy test-core test-upgrade test-aichat teardown
+    @echo "All tests passed."
+
+# Run core tests only (no upgrade, no aichat)
+test-core: test-services test-opensearch test-pipeline test-ism test-scirius
+
+# --- Deploy / Teardown ---
+
+# Initialize and start the stack with local template
+deploy:
+    @echo "==> Deploying stack from {{TEMPLATE_PATH}}"
+    {{STAMUSCTL_BIN}} compose init --default \
+        --template "{{TEMPLATE_PATH}}" \
+        -c "{{TEST_CONFIG}}" \
+        suricata.interfaces={{suricata_iface}} \
+        {{_scirius_arg}}
+    {{STAMUSCTL_BIN}} compose up -d -c "{{TEST_CONFIG}}"
+    @just _fix-readpcap-paths
+    @echo "==> Waiting for services to be healthy..."
+    {{bats}} {{bats_flags}} "{{integration}}/setup.bats"
+
+# Tear down the stack and remove volumes
+teardown:
+    @echo "==> Tearing down stack"
+    -{{STAMUSCTL_BIN}} compose down --volumes -c "{{TEST_CONFIG}}"
+    @echo "==> Cleanup complete"
+
+# Workaround for stamusctl readpcap path bug: when -c is an absolute path,
+# readpcap constructs a broken double-absolute mount path for containers-data.
+# The compose stack creates containers-data at that broken path, so we symlink
+# the clean path to the actual location so readpcap can find it.
+_fix-readpcap-paths:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    config="{{TEST_CONFIG}}"
+    # Only needed when config is an absolute path
+    if [[ "$config" == /* ]]; then
+        # The broken path: cwd + abs_config (with leading / stripped)
+        broken_base="$(pwd)/${config#/}/containers-data"
+        clean="$config/containers-data"
+        if [[ -d "$broken_base" ]] && [[ ! -e "$clean" ]]; then
+            ln -sf "$broken_base" "$clean"
+            echo "  (created containers-data symlink for readpcap)"
+        fi
+    fi
+
+# --- Individual test groups ---
+
+# Test service health, container naming, seed suffix
+test-services:
+    {{bats}} {{bats_flags}} "{{integration}}/services.bats"
+
+# Test OpenSearch 3 cluster: version, health, MCP plugin
+test-opensearch:
+    {{bats}} {{bats_flags}} "{{integration}}/opensearch.bats"
+
+# Test data pipeline: PCAP → Fluentd → OpenSearch
+test-pipeline:
+    {{bats}} {{bats_flags}} "{{integration}}/data-pipeline.bats"
+
+# Test ISM policy: warm state, retention ages
+test-ism:
+    {{bats}} {{bats_flags}} "{{integration}}/ism-policy.bats"
+
+# Test Scirius web UI: nginx proxy, authentication, REST API
+test-scirius:
+    {{bats}} {{bats_flags}} "{{integration}}/scirius.bats"
+
+# Test upgrade: data survival across template update
+test-upgrade:
+    {{bats}} {{bats_flags}} "{{integration}}/upgrade.bats"
+
+# Test LibreChat (separate deploy with aichat.enabled=true)
+test-aichat:
+    @echo "==> Tearing down core stack for aichat test"
+    -{{STAMUSCTL_BIN}} compose down --volumes -c "{{TEST_CONFIG}}"
+    @echo "==> Deploying stack with aichat enabled"
+    {{STAMUSCTL_BIN}} compose init --default \
+        --template "{{TEMPLATE_PATH}}" \
+        -c "{{TEST_CONFIG}}" \
+        suricata.interfaces={{suricata_iface}} \
+        {{_scirius_arg}} \
+        aichat.enabled=true
+    {{STAMUSCTL_BIN}} compose up -d -c "{{TEST_CONFIG}}"
+    @just _fix-readpcap-paths
+    @echo "==> Waiting for services..."
+    {{bats}} {{bats_flags}} "{{integration}}/setup.bats"
+    {{bats}} {{bats_flags}} "{{integration}}/aichat.bats"
+    @echo "==> Tearing down aichat stack"
+    -{{STAMUSCTL_BIN}} compose down --volumes -c "{{TEST_CONFIG}}"
+
+# --- Utility recipes ---
+
+# Show current service status
+status:
+    {{STAMUSCTL_BIN}} compose ps -c "{{TEST_CONFIG}}"
+
+# Show logs (optionally for a specific service)
+logs service="":
+    {{STAMUSCTL_BIN}} compose logs -c "{{TEST_CONFIG}}" {{service}}
+
+# Check prerequisites are available
+check:
+    @command -v {{STAMUSCTL_BIN}} >/dev/null 2>&1 || { echo "ERROR: stamusctl not found at '{{STAMUSCTL_BIN}}'. Set STAMUSCTL_BIN."; exit 1; }
+    @command -v docker >/dev/null 2>&1 || { echo "ERROR: docker not found"; exit 1; }
+    @command -v bats >/dev/null 2>&1 || { echo "ERROR: bats not found. Install with: nix-shell -p bats"; exit 1; }
+    @docker info >/dev/null 2>&1 || { echo "ERROR: Docker daemon not running"; exit 1; }
+    @echo "All prerequisites OK"
+    @echo "  stamusctl: $(command -v {{STAMUSCTL_BIN}})"
+    @echo "  docker: $(docker --version)"
+    @echo "  bats: $(bats --version)"
