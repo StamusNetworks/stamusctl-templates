@@ -3,3 +3,7 @@
 dist/
 tmp/
 config/
+tests/config/
+tests/config.old/
+tests/config_old/
+tests/home/
