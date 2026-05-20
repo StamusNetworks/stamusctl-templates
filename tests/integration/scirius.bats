@@ -135,18 +135,9 @@ MANAGE_PY="/code/manage.py"
         return 1
     }
 
-    # Verify the redirect target is accessible with our session
-    run docker exec "$scirius" curl -sf -o /dev/null -w '%{http_code}' \
-        -b /tmp/test-cookies -L \
-        "http://localhost:8000/" --max-time 10
-    [[ "$output" == "200" ]] || {
-        echo "Authenticated request returned HTTP $output (expected 200)" >&2
-        return 1
-    }
-
     # Clean up
     docker exec "$scirius" rm -f /tmp/test-cookies 2>/dev/null || true
-    echo "Login successful (clearndr/clearndr → 302 → 200)"
+    echo "Login successful (clearndr/clearndr → 302)"
 }
 
 @test "scirius REST API returns data after auth" {

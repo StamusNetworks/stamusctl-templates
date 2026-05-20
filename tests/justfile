@@ -7,6 +7,7 @@ set dotenv-load := true
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
 # Environment configuration
+export STAMUS_APP_NAME := env("STAMUS_APP_NAME", "stamusctl")
 export STAMUSCTL_BIN := env("STAMUSCTL_BIN", "stamusctl")
 export TEMPLATE_PATH := env("TEMPLATE_PATH", justfile_directory() / "../data/clearndr")
 export TEST_CONFIG := env("TEST_CONFIG", justfile_directory() / "config")
