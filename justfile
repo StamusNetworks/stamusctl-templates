@@ -61,10 +61,10 @@ lint-dockerfile:
 lint-commit sha="HEAD":
     pnpm run lint-commit:one {{sha}}
 
-# Validate YAML files with yamllint (if available)
+# Validate YAML files with yamllint (skip Go template files)
 lint-yaml:
     @command -v yamllint >/dev/null 2>&1 || { echo "yamllint not found — skipping"; exit 0; }
-    find data/ -name '*.yaml' -o -name '*.yml' | xargs yamllint
+    find data/ \( -name '*.yaml' -o -name '*.yml' \) ! -name '*.compose.yaml' ! -name 'compose.yml' ! -name 'docker-compose.yaml' | xargs yamllint
 
 # Run all available linters
 lint: lint-dockerfile lint-yaml

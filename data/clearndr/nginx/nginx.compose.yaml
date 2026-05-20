@@ -9,7 +9,7 @@ volumes:
         name: nginx-ssl-{{ .Release.seed }}
 
 services:
-	{{- if .Values.nginx.ssl.enabled }}
+    {{- if .Values.nginx.ssl.enabled }}
     {{- if not .Values.nginx.ssl.folder }}
     ssl-keygen:
         image: nginx:1.27
@@ -44,7 +44,7 @@ services:
             retries: 5
         volumes:
             - scirius-static:/static/:ro
-        	{{- if .Values.nginx.ssl.enabled }}
+            {{- if .Values.nginx.ssl.enabled }}
             {{- if .Values.nginx.ssl.folder }}
             - {{ .Values.nginx.ssl.folder }}:/etc/nginx/ssl:ro
             {{- else }}
@@ -52,7 +52,7 @@ services:
             {{- end }}
             {{- end }}
         depends_on:
-        	{{- if and .Values.nginx.ssl.enabled (not .Values.nginx.ssl.folder) }}
+            {{- if and .Values.nginx.ssl.enabled (not .Values.nginx.ssl.folder) }}
             ssl-keygen:
                 condition: service_completed_successfully
             {{- end }}
@@ -63,7 +63,7 @@ services:
                 condition: service_started
             {{- end }}
         ports:
-        	{{- if .Values.nginx.ssl.enabled }}
+            {{- if .Values.nginx.ssl.enabled }}
             - 443:443
             {{- end }}
             - 80:80

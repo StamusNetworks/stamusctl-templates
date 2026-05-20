@@ -1,0 +1,16 @@
+---
+# Files under data/ are Go templates ({{ }}, {{- if }}) processed by stamusctl.
+# Compose templates are excluded in the justfile find command.
+# This config handles remaining files that yamllint can partially validate.
+extends: default
+ignore: |
+    # Suricata config with its own YAML style + Go template syntax
+    data/clearndr/suricata/selks6-addin.yaml
+rules:
+    document-start: disable
+    line-length:
+        max: 250
+    braces: disable
+    comments: disable
+    truthy:
+        check-keys: false
