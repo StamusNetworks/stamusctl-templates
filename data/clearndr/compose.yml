@@ -19,8 +19,11 @@ networks:
     network:
         name: clearndr-{{ .Release.seed }}
 
-{{- if not (semverCompare ">=1.0.3" (index (splitList ":" .Release.service) 1)) }}
+{{- $version := last (splitList ":" .Release.service) }}
+{{- if regexMatch "^[0-9]+\\.[0-9]+\\.[0-9]+" $version }}
+{{- if not (semverCompare ">=1.0.3" $version) }}
 {{- fail (printf "You are using %s. Please use version 1.0.3 or above" .Release.service) }}
+{{- end }}
 {{- end }}
 
 name: clearndr-{{ .Release.seed }}
