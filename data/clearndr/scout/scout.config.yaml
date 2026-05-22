@@ -9,7 +9,7 @@ scout:
   version:
     type: string
     usage: Scout version to install
-    default: 1.0.0
+    default: 1.0.2
   openPort:
     type: bool
     usage: Open port for Scout ?
