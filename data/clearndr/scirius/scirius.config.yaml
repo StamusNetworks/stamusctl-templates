@@ -9,11 +9,11 @@ scirius:
   sciriusversion:
     type: string
     usage: Scirius version to install
-    default: clear-ndr-1.1.0
+    default: clear-ndr-1.1.2
   version:
     type: string
     usage: Scirius internal version
-    default: 1.1.3
+    default: 1.2.0
   debug:
     type: bool
     usage: Enable debug mode
