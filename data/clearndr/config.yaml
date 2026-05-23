@@ -6,6 +6,7 @@ includes: ./db/db.config.yaml
   ./scout/scout.config.yaml
   ./utils/utils.config.yaml
   ./ai-chat/ai-chat.config.yaml
+  ./otel/otel.config.yaml
 
 globals:
   restartmode:

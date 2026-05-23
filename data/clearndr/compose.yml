@@ -37,3 +37,4 @@ include:
     - suricata/suricata.compose.yaml
     - utils/utils.compose.yaml
     - ai-chat/ai-chat.compose.yaml
+    - otel/otel.compose.yaml

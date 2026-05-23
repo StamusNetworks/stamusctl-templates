@@ -1,6 +1,10 @@
 volumes:
     db-data:
         name: db-data-{{ .Release.seed }}
+    {{- if .Values.otel.enabled }}
+    db-logs:
+        name: db-logs-{{ .Release.seed }}
+    {{- end }}
 
 services:
     db:
@@ -8,11 +12,21 @@ services:
         container_name: {{template "base-name" .}}-db-{{ .Release.seed }}
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         shm_size: 128mb
+        {{- if .Values.otel.enabled }}
+        command: >-
+            postgres
+            -c logging_collector=on
+            -c log_directory=/var/log/postgresql
+            -c log_filename=postgresql.log
+        {{- end }}
         environment:
             POSTGRES_USER: selks
             POSTGRES_PASSWORD: selks
         volumes:
             - db-data:/var/lib/postgresql/data
+            {{- if .Values.otel.enabled }}
+            - db-logs:/var/log/postgresql
+            {{- end }}
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready -U selks']
             interval: 5s

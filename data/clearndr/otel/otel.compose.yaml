@@ -1,0 +1,60 @@
+{{- if .Values.otel.enabled }}
+configs:
+    otel-collector-config:
+        file: otel-config.yaml
+    otel-setup-dashboards-sh:
+        file: setup-dashboards.sh
+
+volumes:
+    otel-file-storage:
+        name: otel-file-storage-{{ .Release.seed }}
+
+services:
+    otel-setup-dashboards:
+        image: curlimages/curl:8.13.0
+        container_name: {{template "base-name" .}}-otel-setup-dashboards-{{ .Release.seed }}
+        restart: "no"
+        configs:
+            - source: otel-setup-dashboards-sh
+              target: /setup-dashboards.sh
+        entrypoint: ["/bin/sh", "/setup-dashboards.sh"]
+        depends_on:
+            scirius:
+                condition: service_healthy
+        networks:
+            network:
+
+    otel-collector:
+        image: {{ printf "%s:%s" (.Values.otel.image | default "otel/opentelemetry-collector-contrib") (.Values.otel.version | default "0.144.0") }}
+        container_name: {{template "base-name" .}}-otel-collector-{{ .Release.seed }}
+        user: "0:0"
+        restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
+        command: ["--config=/etc/otelcol-contrib/config.yaml"]
+        configs:
+            - source: otel-collector-config
+              target: /etc/otelcol-contrib/config.yaml
+        volumes:
+            - otel-file-storage:/var/lib/otelcol/file_storage
+            - {{ .Release.location }}/containers-data/suricata/logs:/var/log/suricata:ro
+            - {{ .Release.location }}/containers-data/scirius/logs:/var/log/scirius:ro
+            - arkime-logs:/var/log/arkime:ro
+            - opensearch-logs:/var/log/opensearch:ro
+            - db-logs:/var/log/postgresql:ro
+            - {{ .Release.location }}/containers-data/nginx/logs:/var/log/nginx:ro
+            {{- if .Values.scout }}
+            - {{ .Release.location }}/containers-data/scout/logs:/var/log/scout:ro
+            {{- end }}
+        healthcheck:
+            disable: true
+        depends_on:
+            opensearch:
+                condition: service_healthy
+        {{- if or .Values.global.exposePorts (.Values.otel).openPort }}
+        ports:
+            - 4317:4317
+            - 4318:4318
+            - 13133:13133
+        {{- end }}
+        networks:
+            network:
+{{- end }}

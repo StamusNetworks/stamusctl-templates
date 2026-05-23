@@ -18,6 +18,10 @@ volumes:
     {{- end }}
     fluentd-pos:
         name: fluentd-pos-{{ .Release.seed }}
+    {{- if .Values.otel.enabled }}
+    opensearch-logs:
+        name: opensearch-logs-{{ .Release.seed }}
+    {{- end }}
 
 services:
     opensearch:
@@ -37,6 +41,9 @@ services:
             - OPENSEARCH_INITIAL_ADMIN_PASSWORD=YH8pq2lqNSnVEQZ
         volumes:
             - {{ .Values.opensearch.datapath | default "opensearch-data" }}:/usr/share/opensearch/data
+            {{- if .Values.otel.enabled }}
+            - opensearch-logs:/usr/share/opensearch/logs
+            {{- end }}
         {{- if or .Values.global.exposeports .Values.opensearch.openport }}
         ports:
             - 9200:9200
