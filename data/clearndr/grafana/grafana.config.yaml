@@ -1,0 +1,17 @@
+grafana:
+  enabled:
+    type: bool
+    usage: Enable Grafana dashboards for Suricata EVE and application log analysis
+    default: false
+  openPort:
+    type: bool
+    usage: Expose Grafana port directly (in addition to NGINX proxy at /grafana/)
+    default: false
+  port:
+    type: string
+    usage: Port to expose Grafana on host (only used if openPort is true)
+    default: "3000"
+  adminPassword:
+    type: string
+    usage: Grafana admin password (default user is admin)
+    default: clearndr

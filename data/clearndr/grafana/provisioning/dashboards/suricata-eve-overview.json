@@ -1,0 +1,728 @@
+{
+  "id": null,
+  "uid": "suricata-eve-overview",
+  "title": "Suricata EVE Overview",
+  "tags": ["suricata", "clearndr", "security"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "event_type",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-opensearch-datasource",
+          "uid": "opensearch-eve"
+        },
+        "query": "{\"find\": \"terms\", \"field\": \"event_type.keyword\"}",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "multi": true,
+        "includeAll": true,
+        "refresh": 2,
+        "sort": 1,
+        "label": "Event Type"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Events",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:$event_type",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "date_histogram",
+              "id": "2",
+              "field": "@timestamp",
+              "settings": { "interval": "auto" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Total Alerts",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:alert",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "date_histogram",
+              "id": "2",
+              "field": "@timestamp",
+              "settings": { "interval": "auto" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Unique Source IPs",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:$event_type",
+          "metrics": [{ "type": "cardinality", "id": "1", "field": "src_ip" }],
+          "bucketAggs": [
+            {
+              "type": "date_histogram",
+              "id": "2",
+              "field": "@timestamp",
+              "settings": { "interval": "1h" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "purple", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["max"],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Unique Destination IPs",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:$event_type",
+          "metrics": [{ "type": "cardinality", "id": "1", "field": "dest_ip" }],
+          "bucketAggs": [
+            {
+              "type": "date_histogram",
+              "id": "2",
+              "field": "@timestamp",
+              "settings": { "interval": "1h" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "purple", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Events Over Time by Type",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:$event_type",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "3",
+              "field": "event_type.keyword",
+              "settings": { "size": "10", "order": "desc", "orderBy": "_count" }
+            },
+            {
+              "type": "date_histogram",
+              "id": "2",
+              "field": "@timestamp",
+              "settings": { "interval": "auto" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "stacking": { "mode": "normal" },
+            "lineWidth": 0,
+            "pointSize": 5
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Alerts Over Time by Severity",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:alert",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "3",
+              "field": "alert.severity",
+              "settings": { "size": "5", "order": "asc", "orderBy": "_term" }
+            },
+            {
+              "type": "date_histogram",
+              "id": "2",
+              "field": "@timestamp",
+              "settings": { "interval": "auto" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "stacking": { "mode": "normal" },
+            "lineWidth": 0,
+            "pointSize": 5
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "1" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "2" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "3" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Top 20 Alert Signatures",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 12 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:alert",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "2",
+              "field": "alert.signature.keyword",
+              "settings": { "size": "20", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Count", "desc": true }]
+      }
+    },
+    {
+      "id": 8,
+      "title": "Top 20 Source IPs",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 12 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:$event_type",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "2",
+              "field": "src_ip",
+              "settings": { "size": "20", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Count", "desc": true }]
+      }
+    },
+    {
+      "id": 9,
+      "title": "Top 20 Destination IPs",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 12 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:$event_type",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "2",
+              "field": "dest_ip",
+              "settings": { "size": "20", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Count", "desc": true }]
+      }
+    },
+    {
+      "id": 10,
+      "title": "Protocol Distribution",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 22 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:$event_type",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "2",
+              "field": "proto.keyword",
+              "settings": { "size": "10", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "barWidth": 0.8,
+        "groupWidth": 0.7,
+        "xTickLabelRotation": 0,
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Application Protocol Distribution",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 22 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:$event_type",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "2",
+              "field": "app_proto.keyword",
+              "settings": { "size": "15", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "barWidth": 0.8,
+        "groupWidth": 0.7,
+        "xTickLabelRotation": 0,
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Alert Categories",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 22 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:alert",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "2",
+              "field": "alert.category.keyword",
+              "settings": { "size": "10", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "barWidth": 0.8,
+        "groupWidth": 0.7,
+        "xTickLabelRotation": 0,
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Source GeoIP Map",
+      "type": "geomap",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 30 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "_exists_:geoip.location AND event_type.keyword:$event_type",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "geohash_grid",
+              "id": "2",
+              "field": "geoip.location",
+              "settings": { "precision": "3" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "view": {
+          "id": "zero",
+          "lat": 30,
+          "lon": 0,
+          "zoom": 2
+        },
+        "basemap": {
+          "type": "default"
+        },
+        "layers": [
+          {
+            "type": "heatmap",
+            "config": {
+              "weight": { "field": "Count", "fixed": 1, "min": 0, "max": 1 },
+              "radius": { "fixed": 20, "min": 1, "max": 50 },
+              "blur": { "fixed": 15, "min": 1, "max": 50 },
+              "opacity": 0.6
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "title": "Top DNS Queries",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 30 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:dns",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "2",
+              "field": "dns.rrname.keyword",
+              "settings": { "size": "20", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Count", "desc": true }]
+      }
+    },
+    {
+      "id": 15,
+      "title": "Top HTTP Hosts",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 30 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:http",
+          "metrics": [{ "type": "count", "id": "1" }],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "id": "2",
+              "field": "http.hostname.keyword",
+              "settings": { "size": "20", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Count", "desc": true }]
+      }
+    },
+    {
+      "id": 16,
+      "title": "Traffic Volume Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 40 },
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-eve"
+      },
+      "targets": [
+        {
+          "query": "event_type.keyword:flow",
+          "metrics": [
+            { "type": "sum", "id": "1", "field": "flow.bytes_toserver", "settings": {} },
+            { "type": "sum", "id": "2", "field": "flow.bytes_toclient", "settings": {} }
+          ],
+          "bucketAggs": [
+            {
+              "type": "date_histogram",
+              "id": "3",
+              "field": "@timestamp",
+              "settings": { "interval": "auto" }
+            }
+          ],
+          "timeField": "@timestamp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Sum flow.bytes_toserver" },
+            "properties": [
+              { "id": "displayName", "value": "Bytes to Server" },
+              { "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Sum flow.bytes_toclient" },
+            "properties": [
+              { "id": "displayName", "value": "Bytes to Client" },
+              { "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false
+}

@@ -44,11 +44,18 @@ services:
             {{- if .Values.scout }}
             - {{ .Release.location }}/containers-data/scout/logs:/var/log/scout:ro
             {{- end }}
+            {{- if .Values.otel.metrics.docker.enabled }}
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            {{- end }}
         healthcheck:
             disable: true
         depends_on:
             opensearch:
                 condition: service_healthy
+            {{- if .Values.victoriametrics.enabled }}
+            victoriametrics:
+                condition: service_healthy
+            {{- end }}
         {{- if or .Values.global.exposePorts (.Values.otel).openPort }}
         ports:
             - 4317:4317

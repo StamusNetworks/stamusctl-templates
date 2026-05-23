@@ -38,3 +38,5 @@ include:
     - utils/utils.compose.yaml
     - ai-chat/ai-chat.compose.yaml
     - otel/otel.compose.yaml
+    - victoriametrics/victoriametrics.compose.yaml
+    - grafana/grafana.compose.yaml
