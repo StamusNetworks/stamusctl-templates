@@ -47,8 +47,17 @@ otel:
       enabled:
         type: bool
         usage: Collect NGINX metrics (adds stub_status endpoint)
-        default: false
+        default: true
       interval:
         type: string
         usage: NGINX metrics collection interval
         default: "60s"
+    docker:
+      enabled:
+        type: bool
+        usage: Collect Docker container CPU, memory, and network metrics
+        default: true
+      interval:
+        type: string
+        usage: Docker metrics collection interval
+        default: "30s"

@@ -97,17 +97,39 @@ receivers:
   {{- end }}
 
   {{- if .Values.otel.metrics.os.enabled }}
-  httpcheck/opensearch:
-    targets:
-      - endpoint: http://opensearch:9200/_cluster/health
-        method: GET
+  elasticsearch:
+    endpoint: http://opensearch:9200
     collection_interval: {{ .Values.otel.metrics.os.interval | default "60s" }}
+    skip_cluster_metrics: false
+    nodes: ["_local"]
   {{- end }}
 
   {{- if .Values.otel.metrics.ngx.enabled }}
   nginx:
-    endpoint: http://nginx:80/stub_status
+    endpoint: http://nginx:8081/stub_status
     collection_interval: {{ .Values.otel.metrics.ngx.interval | default "60s" }}
+  {{- end }}
+
+  {{- if .Values.otel.metrics.docker.enabled }}
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: {{ .Values.otel.metrics.docker.interval | default "30s" }}
+    timeout: 10s
+    metrics:
+      container.cpu.usage.total:
+        enabled: true
+      container.cpu.percent:
+        enabled: true
+      container.memory.usage:
+        enabled: true
+      container.memory.percent:
+        enabled: true
+      container.network.io.usage.rx_bytes:
+        enabled: true
+      container.network.io.usage.tx_bytes:
+        enabled: true
+      container.blockio.io_service_bytes_recursive:
+        enabled: true
   {{- end }}
 
 processors:
@@ -182,9 +204,18 @@ exporters:
     mapping:
       mode: flatten_attributes
 
-  {{- if or .Values.otel.metrics.pg.enabled .Values.otel.metrics.rmq.enabled .Values.otel.metrics.os.enabled .Values.otel.metrics.ngx.enabled }}
+  {{- if or .Values.otel.metrics.pg.enabled .Values.otel.metrics.rmq.enabled .Values.otel.metrics.os.enabled .Values.otel.metrics.ngx.enabled .Values.otel.metrics.docker.enabled }}
+  {{- if .Values.victoriametrics.enabled }}
+  prometheusremotewrite/victoriametrics:
+    endpoint: http://victoriametrics:8428/api/v1/write
+    tls:
+      insecure: true
+    resource_to_telemetry_conversion:
+      enabled: true
+  {{- else }}
   debug/metrics:
     verbosity: basic
+  {{- end }}
   {{- end }}
 
 service:
@@ -255,7 +286,7 @@ service:
         - opensearch/logs
     {{- end }}
 
-    {{- if or .Values.otel.metrics.pg.enabled .Values.otel.metrics.rmq.enabled .Values.otel.metrics.os.enabled .Values.otel.metrics.ngx.enabled }}
+    {{- if or .Values.otel.metrics.pg.enabled .Values.otel.metrics.rmq.enabled .Values.otel.metrics.os.enabled .Values.otel.metrics.ngx.enabled .Values.otel.metrics.docker.enabled }}
     metrics/infra:
       receivers:
         {{- if .Values.otel.metrics.pg.enabled }}
@@ -265,14 +296,21 @@ service:
         - rabbitmq
         {{- end }}
         {{- if .Values.otel.metrics.os.enabled }}
-        - httpcheck/opensearch
+        - elasticsearch
         {{- end }}
         {{- if .Values.otel.metrics.ngx.enabled }}
         - nginx
         {{- end }}
+        {{- if .Values.otel.metrics.docker.enabled }}
+        - docker_stats
+        {{- end }}
       processors:
         - batch
       exporters:
+        {{- if .Values.victoriametrics.enabled }}
+        - prometheusremotewrite/victoriametrics
+        {{- else }}
         - debug/metrics
+        {{- end }}
     {{- end }}
 {{- end }}

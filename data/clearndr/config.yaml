@@ -7,6 +7,8 @@ includes: ./db/db.config.yaml
   ./utils/utils.config.yaml
   ./ai-chat/ai-chat.config.yaml
   ./otel/otel.config.yaml
+  ./victoriametrics/victoriametrics.config.yaml
+  ./grafana/grafana.config.yaml
 
 globals:
   restartmode:
@@ -30,4 +32,4 @@ globals:
     no_proxy:
       type: string
       usage: Comma-separated list of hosts that should not use proxy
-      default: "localhost,127.0.0.1,opensearch,opensearch-dashboards,scirius,scout,nginx"
+      default: "localhost,127.0.0.1,opensearch,opensearch-dashboards,scirius,scout,nginx,grafana,victoriametrics"

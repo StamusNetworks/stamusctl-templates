@@ -1,0 +1,29 @@
+{{- if .Values.victoriametrics.enabled }}
+volumes:
+    victoriametrics-data:
+        name: victoriametrics-data-{{ .Release.seed }}
+
+services:
+    victoriametrics:
+        image: {{ printf "%s:%s" (.Values.victoriametrics.image | default "victoriametrics/victoria-metrics") (.Values.victoriametrics.version | default "v1.118.0") }}
+        container_name: {{template "base-name" .}}-victoriametrics-{{ .Release.seed }}
+        restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
+        command:
+            - "--storageDataPath=/victoria-metrics-data"
+            - "--retentionPeriod={{ .Values.victoriametrics.retention | default "90d" }}"
+            - "--httpListenAddr=:8428"
+        volumes:
+            - victoriametrics-data:/victoria-metrics-data
+        healthcheck:
+            test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:8428/health || exit 1']
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 30s
+        {{- if or .Values.global.exposePorts .Values.victoriametrics.openPort }}
+        ports:
+            - {{ .Values.victoriametrics.port | default "8428" }}:8428
+        {{- end }}
+        networks:
+            network:
+{{- end }}

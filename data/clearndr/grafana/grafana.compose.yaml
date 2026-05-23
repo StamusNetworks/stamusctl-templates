@@ -1,0 +1,88 @@
+{{- if .Values.grafana.enabled }}
+configs:
+    grafana-datasources:
+        file: provisioning/datasources/opensearch.yaml
+    {{- if .Values.victoriametrics.enabled }}
+    grafana-datasource-victoriametrics:
+        file: provisioning/datasources/victoriametrics.yaml
+    {{- end }}
+    grafana-dashboard-provider:
+        file: provisioning/dashboards/dashboards.yaml
+    grafana-dashboard-suricata:
+        file: provisioning/dashboards/suricata-eve-overview.json
+    grafana-dashboard-applogs:
+        file: provisioning/dashboards/application-logs.json
+    {{- if .Values.victoriametrics.enabled }}
+    grafana-dashboard-infra:
+        file: provisioning/dashboards/infrastructure-metrics.json
+    {{- end }}
+    grafana-ini:
+        file: grafana.ini
+
+volumes:
+    grafana-data:
+        name: grafana-data-{{ .Release.seed }}
+
+services:
+    grafana:
+        image: grafana/grafana-oss:11.6.0
+        container_name: {{template "base-name" .}}-grafana-{{ .Release.seed }}
+        restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
+        environment:
+            - GF_INSTALL_PLUGINS=grafana-opensearch-datasource
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD={{ .Values.grafana.adminPassword | default "clearndr" }}
+            - GF_SERVER_ROOT_URL=http://localhost/grafana/
+            - GF_SERVER_SERVE_FROM_SUB_PATH=true
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+            - GF_USERS_ALLOW_SIGN_UP=false
+            {{- if .Values.globals.proxy.enabled }}
+            - HTTP_PROXY={{ .Values.globals.proxy.http }}
+            - HTTPS_PROXY={{ .Values.globals.proxy.https }}
+            - NO_PROXY={{ .Values.globals.proxy.no_proxy }}
+            {{- end }}
+        configs:
+            - source: grafana-ini
+              target: /etc/grafana/grafana.ini
+            - source: grafana-datasources
+              target: /etc/grafana/provisioning/datasources/opensearch.yaml
+            {{- if .Values.victoriametrics.enabled }}
+            - source: grafana-datasource-victoriametrics
+              target: /etc/grafana/provisioning/datasources/victoriametrics.yaml
+            {{- end }}
+            - source: grafana-dashboard-provider
+              target: /etc/grafana/provisioning/dashboards/dashboards.yaml
+            - source: grafana-dashboard-suricata
+              target: /var/lib/grafana/dashboards/suricata-eve-overview.json
+            - source: grafana-dashboard-applogs
+              target: /var/lib/grafana/dashboards/application-logs.json
+            {{- if .Values.victoriametrics.enabled }}
+            - source: grafana-dashboard-infra
+              target: /var/lib/grafana/dashboards/infrastructure-metrics.json
+            {{- end }}
+        volumes:
+            - grafana-data:/var/lib/grafana
+            {{- if .Values.otel.enabled }}
+            - {{ .Release.location }}/containers-data/grafana/logs:/var/log/grafana
+            {{- end }}
+        healthcheck:
+            test: ['CMD-SHELL', 'curl --silent --fail http://localhost:3000/api/health || exit 1']
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 60s
+        depends_on:
+            opensearch:
+                condition: service_healthy
+            {{- if .Values.victoriametrics.enabled }}
+            victoriametrics:
+                condition: service_healthy
+            {{- end }}
+        {{- if or .Values.global.exposePorts .Values.grafana.openPort }}
+        ports:
+            - {{ .Values.grafana.port | default "3000" }}:3000
+        {{- end }}
+        networks:
+            network:
+{{- end }}

@@ -1,0 +1,25 @@
+victoriametrics:
+  enabled:
+    type: bool
+    usage: Enable VictoriaMetrics time-series database for infrastructure metrics
+    default: false
+  image:
+    type: string
+    usage: VictoriaMetrics single-node image
+    default: "victoriametrics/victoria-metrics"
+  version:
+    type: string
+    usage: VictoriaMetrics image version
+    default: "v1.118.0"
+  retention:
+    type: string
+    usage: Data retention period
+    default: "90d"
+  openPort:
+    type: bool
+    usage: Expose VictoriaMetrics HTTP port (8428) on host
+    default: false
+  port:
+    type: string
+    usage: Port to expose VictoriaMetrics on host (only used if openPort is true)
+    default: "8428"
