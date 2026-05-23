@@ -1,0 +1,278 @@
+{{- if .Values.otel.enabled }}
+extensions:
+  health_check:
+    endpoint: "0.0.0.0:13133"
+  file_storage:
+    directory: /var/lib/otelcol/file_storage
+
+receivers:
+  filelog/suricata-daemon:
+    include:
+      - /var/log/suricata/suricata.log
+    start_at: end
+    storage: file_storage
+
+  filelog/scirius:
+    include:
+      - /var/log/scirius/*.log
+    start_at: end
+    storage: file_storage
+    multiline:
+      line_start_pattern: '^\d{4}-\d{2}-\d{2}|^\{'
+    operators:
+      - type: json_parser
+        if: 'body matches "^\\{"'
+        timestamp:
+          parse_from: attributes.timestamp
+          layout: '%Y-%m-%dT%H:%M:%S.%f%z'
+
+  filelog/arkime:
+    include:
+      - /var/log/arkime/*.log
+    start_at: end
+    storage: file_storage
+
+  filelog/opensearch:
+    include:
+      - /var/log/opensearch/*.log
+    start_at: end
+    storage: file_storage
+    multiline:
+      line_start_pattern: '^\['
+
+  filelog/postgresql:
+    include:
+      - /var/log/postgresql/*.log
+    start_at: end
+    storage: file_storage
+    multiline:
+      line_start_pattern: '^\d{4}-\d{2}-\d{2}'
+
+  filelog/nginx:
+    include:
+      - /var/log/nginx/*.log
+    start_at: end
+    storage: file_storage
+    operators:
+      - type: regex_parser
+        if: 'body matches "^[\\d.]+ "'
+        regex: '^(?P<remote_addr>[^ ]*) - (?P<remote_user>[^ ]*) \[(?P<time_local>[^\]]*)\] "(?P<request>[^"]*)" (?P<status>\d+) (?P<body_bytes_sent>\d+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"'
+        timestamp:
+          parse_from: attributes.time_local
+          layout: '%d/%b/%Y:%H:%M:%S %z'
+
+  {{- if .Values.scout }}
+  filelog/scout:
+    include:
+      - /var/log/scout/*.log
+    start_at: end
+    storage: file_storage
+    operators:
+      - type: regex_parser
+        if: 'body matches "^[\\d.]+ "'
+        regex: '^(?P<remote_addr>[^ ]*) - (?P<remote_user>[^ ]*) \[(?P<time_local>[^\]]*)\] "(?P<request>[^"]*)" (?P<status>\d+) (?P<body_bytes_sent>\d+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"'
+        timestamp:
+          parse_from: attributes.time_local
+          layout: '%d/%b/%Y:%H:%M:%S %z'
+  {{- end }}
+
+  {{- if .Values.otel.metrics.pg.enabled }}
+  postgresql:
+    endpoint: db:5432
+    username: selks
+    password: selks
+    databases:
+      - selks
+    collection_interval: {{ .Values.otel.metrics.pg.interval | default "60s" }}
+    tls:
+      insecure: true
+  {{- end }}
+
+  {{- if .Values.otel.metrics.rmq.enabled }}
+  rabbitmq:
+    endpoint: http://rabbitmq:15672
+    username: guest
+    password: guest
+    collection_interval: {{ .Values.otel.metrics.rmq.interval | default "60s" }}
+  {{- end }}
+
+  {{- if .Values.otel.metrics.os.enabled }}
+  httpcheck/opensearch:
+    targets:
+      - endpoint: http://opensearch:9200/_cluster/health
+        method: GET
+    collection_interval: {{ .Values.otel.metrics.os.interval | default "60s" }}
+  {{- end }}
+
+  {{- if .Values.otel.metrics.ngx.enabled }}
+  nginx:
+    endpoint: http://nginx:80/stub_status
+    collection_interval: {{ .Values.otel.metrics.ngx.interval | default "60s" }}
+  {{- end }}
+
+processors:
+  batch:
+    send_batch_size: 1024
+    timeout: 1s
+
+  transform/scirius:
+    log_statements:
+      - context: log
+        statements:
+          - set(time, observed_time)
+          - set(attributes["tag"], "scirius")
+          - set(attributes["opensearch.index"], "applogs-scirius")
+          - set(body, "") where attributes["logger"] != nil
+
+  transform/arkime:
+    log_statements:
+      - context: log
+        statements:
+          - set(time, observed_time)
+          - set(attributes["tag"], "arkime")
+          - set(attributes["opensearch.index"], "applogs-arkime")
+
+  transform/suricata-daemon:
+    log_statements:
+      - context: log
+        statements:
+          - set(time, observed_time)
+          - set(attributes["tag"], "suricata-daemon")
+          - set(attributes["opensearch.index"], "applogs-suricata")
+
+  transform/opensearch:
+    log_statements:
+      - context: log
+        statements:
+          - set(time, observed_time)
+          - set(attributes["tag"], "opensearch")
+          - set(attributes["opensearch.index"], "applogs-opensearch")
+
+  transform/postgresql:
+    log_statements:
+      - context: log
+        statements:
+          - set(time, observed_time)
+          - set(attributes["tag"], "postgresql")
+          - set(attributes["opensearch.index"], "applogs-postgresql")
+
+  transform/nginx:
+    log_statements:
+      - context: log
+        statements:
+          - set(time, observed_time)
+          - set(attributes["tag"], "nginx")
+          - set(attributes["opensearch.index"], "applogs-nginx")
+
+  {{- if .Values.scout }}
+  transform/scout:
+    log_statements:
+      - context: log
+        statements:
+          - set(time, observed_time)
+          - set(attributes["tag"], "scout")
+          - set(attributes["opensearch.index"], "applogs-scout")
+  {{- end }}
+
+exporters:
+  opensearch/logs:
+    http:
+      endpoint: http://opensearch:9200
+    logs_index: "%{opensearch.index}"
+    mapping:
+      mode: flatten_attributes
+
+  {{- if or .Values.otel.metrics.pg.enabled .Values.otel.metrics.rmq.enabled .Values.otel.metrics.os.enabled .Values.otel.metrics.ngx.enabled }}
+  debug/metrics:
+    verbosity: basic
+  {{- end }}
+
+service:
+  extensions: [health_check, file_storage]
+  pipelines:
+    logs/suricata-daemon:
+      receivers:
+        - filelog/suricata-daemon
+      processors:
+        - transform/suricata-daemon
+        - batch
+      exporters:
+        - opensearch/logs
+
+    logs/scirius:
+      receivers:
+        - filelog/scirius
+      processors:
+        - transform/scirius
+        - batch
+      exporters:
+        - opensearch/logs
+
+    logs/arkime:
+      receivers:
+        - filelog/arkime
+      processors:
+        - transform/arkime
+        - batch
+      exporters:
+        - opensearch/logs
+
+    logs/opensearch:
+      receivers:
+        - filelog/opensearch
+      processors:
+        - transform/opensearch
+        - batch
+      exporters:
+        - opensearch/logs
+
+    logs/postgresql:
+      receivers:
+        - filelog/postgresql
+      processors:
+        - transform/postgresql
+        - batch
+      exporters:
+        - opensearch/logs
+
+    logs/nginx:
+      receivers:
+        - filelog/nginx
+      processors:
+        - transform/nginx
+        - batch
+      exporters:
+        - opensearch/logs
+
+    {{- if .Values.scout }}
+    logs/scout:
+      receivers:
+        - filelog/scout
+      processors:
+        - transform/scout
+        - batch
+      exporters:
+        - opensearch/logs
+    {{- end }}
+
+    {{- if or .Values.otel.metrics.pg.enabled .Values.otel.metrics.rmq.enabled .Values.otel.metrics.os.enabled .Values.otel.metrics.ngx.enabled }}
+    metrics/infra:
+      receivers:
+        {{- if .Values.otel.metrics.pg.enabled }}
+        - postgresql
+        {{- end }}
+        {{- if .Values.otel.metrics.rmq.enabled }}
+        - rabbitmq
+        {{- end }}
+        {{- if .Values.otel.metrics.os.enabled }}
+        - httpcheck/opensearch
+        {{- end }}
+        {{- if .Values.otel.metrics.ngx.enabled }}
+        - nginx
+        {{- end }}
+      processors:
+        - batch
+      exporters:
+        - debug/metrics
+    {{- end }}
+{{- end }}

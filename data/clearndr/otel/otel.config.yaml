@@ -1,0 +1,54 @@
+otel:
+  enabled:
+    type: bool
+    usage: Enable OpenTelemetry Collector for application logs and infrastructure metrics
+    default: false
+  image:
+    type: string
+    usage: OTel Collector contrib image
+    default: "otel/opentelemetry-collector-contrib"
+  version:
+    type: string
+    usage: OTel Collector image version
+    default: "0.144.0"
+  openPort:
+    type: bool
+    usage: Expose OTel Collector ports (4317 gRPC, 4318 HTTP, 13133 health)
+    default: false
+  metrics:
+    pg:
+      enabled:
+        type: bool
+        usage: Collect PostgreSQL metrics
+        default: true
+      interval:
+        type: string
+        usage: PostgreSQL metrics collection interval
+        default: "60s"
+    rmq:
+      enabled:
+        type: bool
+        usage: Collect RabbitMQ metrics
+        default: true
+      interval:
+        type: string
+        usage: RabbitMQ metrics collection interval
+        default: "60s"
+    os:
+      enabled:
+        type: bool
+        usage: Collect OpenSearch cluster metrics
+        default: true
+      interval:
+        type: string
+        usage: OpenSearch metrics collection interval
+        default: "60s"
+    ngx:
+      enabled:
+        type: bool
+        usage: Collect NGINX metrics (adds stub_status endpoint)
+        default: false
+      interval:
+        type: string
+        usage: NGINX metrics collection interval
+        default: "60s"

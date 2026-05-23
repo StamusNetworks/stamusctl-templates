@@ -11,6 +11,10 @@ services:
         configs:
             - source: scout-config
               target: /usr/share/nginx/html/config.json
+        {{- if .Values.otel.enabled }}
+        volumes:
+            - {{ .Release.location }}/containers-data/scout/logs:/var/log/nginx
+        {{- end }}
         {{- if or .Values.global.exposePorts (.Values.scout).openPort }}
         ports:
             - {{ (.Values.scout).port | default "8080" }}:80
