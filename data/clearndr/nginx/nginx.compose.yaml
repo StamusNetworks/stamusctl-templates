@@ -69,6 +69,10 @@ services:
             grafana:
                 condition: service_started
             {{- end }}
+            {{- if .Values.aichat.enabled }}
+            librechat:
+                condition: service_healthy
+            {{- end }}
         ports:
             {{- if .Values.nginx.ssl.enabled }}
             - 443:443

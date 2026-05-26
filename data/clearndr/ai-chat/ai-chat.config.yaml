@@ -3,14 +3,6 @@ aichat:
     type: bool
     usage: Enable AI Chat (LibreChat) functionality
     default: false
-  openPort:
-    type: bool
-    usage: Expose Open WebUI port
-    default: true
-  port:
-    type: string
-    usage: Port to expose Open WebUI on host
-    default: "3000"
   openai_api_key:
     type: string
     usage: OpenAI API key for GPT-4/GPT-4o models
