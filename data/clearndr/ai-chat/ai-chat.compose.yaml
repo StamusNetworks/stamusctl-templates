@@ -23,7 +23,7 @@ volumes:
 
 services:
   librechat-init:
-    image: ghcr.io/danny-avila/librechat:latest
+    image: ghcr.io/danny-avila/librechat:v0.8.6-rc1
     container_name: {{template "base-name" .}}-librechat-init-{{ .Release.seed }}
     restart: "no"
 
@@ -132,7 +132,7 @@ services:
       start_period: 10s
 
   librechat:
-    image: ghcr.io/danny-avila/librechat:latest
+    image: ghcr.io/danny-avila/librechat:v0.8.6-rc1
     container_name: {{template "base-name" .}}-librechat-{{ .Release.seed }}
     restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
     entrypoint: ["/bin/sh", "/start-librechat.sh"]
@@ -154,6 +154,8 @@ services:
       # Application Settings
       - HOST=0.0.0.0
       - PORT=3000
+      - DOMAIN_CLIENT=http://localhost/aichat
+      - DOMAIN_SERVER=http://localhost/aichat
 
       # Security Keys (required by LibreChat)
       - JWT_SECRET={{ .Values.aichat.jwt_secret | default (randAlphaNum 32) }}
@@ -192,9 +194,6 @@ services:
       - librechat-data:/app/client/public/images
       - librechat-shared:/shared:ro
 
-    ports:
-      - "{{ .Values.aichat.port | default "3000" }}:3000"
-
     networks:
       network:
 
@@ -207,11 +206,11 @@ services:
         condition: service_healthy
 
     healthcheck:
-      test: ['CMD-SHELL', 'curl --fail http://localhost:3000/api/health || exit 1']
+      test: ['CMD-SHELL', 'wget -qO /dev/null http://127.0.0.1:3000/ || exit 1']
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 5
+      start_period: 90s
 
   librechat-mongo:
     image: mongo:7.0
