@@ -136,13 +136,17 @@ services:
     container_name: {{template "base-name" .}}-librechat-{{ .Release.seed }}
     restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
     entrypoint: ["/bin/sh", "/start-librechat.sh"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     environment:
       # LLM API Keys (set via environment or values)
       - ANTHROPIC_API_KEY={{ .Values.aichat.anthropic_api_key | default "" }}
       - OPENAI_API_KEY={{ .Values.aichat.openai_api_key | default "" }}
-      - GOOGLE_KEY={{ .Values.aichat.google_api_key | default "" }}
+{{- if .Values.aichat.google_api_key }}
+      - GOOGLE_KEY={{ .Values.aichat.google_api_key }}
       - GOOGLE_MODELS=gemini-3-flash-preview,gemini-3-pro-preview,gemini-3-pro-image-preview
+{{- end }}
 
       # MongoDB (LibreChat requirement)
       - MONGO_URI=mongodb://librechat-mongo:27017/LibreChat

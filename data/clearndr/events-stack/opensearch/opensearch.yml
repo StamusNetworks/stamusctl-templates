@@ -4,6 +4,7 @@ discovery.type: single-node
 ingest.geoip.downloader.enabled: false
 
 # Enable built-in MCP server (OpenSearch 3.0+)
+plugins.ml_commons.mcp_server_enabled: true
 plugins.ml_commons.mcp_connector_enabled: true
 plugins.ml_commons.trusted_connector_endpoints_regex:
   - ".*"
