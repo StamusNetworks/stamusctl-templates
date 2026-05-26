@@ -36,7 +36,7 @@ fi
 # Generate librechat.yaml from template
 echo "Generating librechat.yaml from template..."
 if [ -f "$CONFIG_TEMPLATE" ]; then
-    # Use sed to replace __SCIRIUS_TOKEN__ with actual token
+    # Replace runtime placeholder with actual token
     sed "s/__SCIRIUS_TOKEN__/$SCIRIUS_TOKEN/g" "$CONFIG_TEMPLATE" > "$CONFIG_OUTPUT"
     echo "✅ Config generated successfully"
 else

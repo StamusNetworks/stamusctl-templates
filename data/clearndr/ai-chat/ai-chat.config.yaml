@@ -23,10 +23,10 @@ aichat:
     type: string
     usage: Google API key for Gemini models
     default: ""
-  ollama_url:
+  local_llm_url:
     type: string
-    usage: Ollama API URL for local/private models
-    default: "http://host.docker.internal:11434"
+    usage: Local LLM API URL (OpenAI-compatible endpoint, e.g. llama.cpp, LocalAI, vLLM)
+    default: ""
   default_user_email:
     type: string
     usage: Default user email (auto-created on first start)
