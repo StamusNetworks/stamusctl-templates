@@ -19,6 +19,18 @@ aichat:
     type: string
     usage: Local LLM API URL (OpenAI-compatible endpoint, e.g. llama.cpp, LocalAI, vLLM)
     default: ""
+  remote_llm_url:
+    type: string
+    usage: Remote LLM API base URL (OpenAI-compatible, e.g. Azure OpenAI, private vLLM)
+    default: ""
+  remote_llm_api_key:
+    type: string
+    usage: API key for the remote LLM endpoint
+    default: ""
+  remote_llm_name:
+    type: string
+    usage: Display name for the remote LLM endpoint
+    default: ""
   default_user_email:
     type: string
     usage: Default user email (auto-created on first start)

@@ -145,7 +145,6 @@ services:
       - OPENAI_API_KEY={{ .Values.aichat.openai_api_key | default "" }}
 {{- if .Values.aichat.google_api_key }}
       - GOOGLE_KEY={{ .Values.aichat.google_api_key }}
-      - GOOGLE_MODELS=gemini-3-flash-preview,gemini-3-pro-preview,gemini-3-pro-image-preview
 {{- end }}
 
       # MongoDB (LibreChat requirement)
