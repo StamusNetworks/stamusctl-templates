@@ -68,7 +68,12 @@ start() {
         echo DEBUG
         python manage.py runserver 0.0.0.0:8000
     else
-        gunicorn -w $(($(nproc) * 2 + 1)) -t 120 -b 0.0.0.0:8000 scirius.wsgi
+        MAX_WORKERS=8
+        WORKERS=$(( $(nproc) * 2 + 1 ))
+        if [ "$WORKERS" -gt "$MAX_WORKERS" ]; then
+            WORKERS=$MAX_WORKERS
+        fi
+        gunicorn -w $WORKERS -t 120 -b 0.0.0.0:8000 scirius.wsgi
     fi
 }
 
