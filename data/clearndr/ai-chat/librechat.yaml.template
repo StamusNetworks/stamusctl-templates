@@ -40,9 +40,6 @@ registration:
 endpoints:
 {{- if .Values.aichat.google_api_key }}
   google:
-    models:
-      default: ["gemini-3.5-flash"]
-      fetch: true
     titleModel: "gemini-3.5-flash"
     promptPrefix: |
       You are a Network Security Expert specializing in threat detection, analysis, and incident response using Clear NDR (Network Detection and Response) by Stamus Networks.
@@ -75,9 +72,6 @@ endpoints:
 {{- end }}
 {{- if .Values.aichat.openai_api_key }}
   openAI:
-    models:
-      default: ["gpt-5.5"]
-      fetch: true
     titleModel: "gpt-5.5"
     promptPrefix: |
       You are a Network Security Expert specializing in threat detection, analysis, and incident response using Clear NDR (Network Detection and Response) by Stamus Networks.
@@ -110,9 +104,6 @@ endpoints:
 {{- end }}
 {{- if .Values.aichat.anthropic_api_key }}
   anthropic:
-    models:
-      default: ["claude-opus-4-8"]
-      fetch: true
     titleModel: "claude-opus-4-8"
     promptPrefix: |
       You are a Network Security Expert specializing in threat detection, analysis, and incident response using Clear NDR (Network Detection and Response) by Stamus Networks.
