@@ -126,10 +126,10 @@ services:
 
     healthcheck:
       test: ['CMD-SHELL', 'wget --spider --quiet http://127.0.0.1:8080/ || exit 1']
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      interval: {{ .Values.aichat.healthcheck.interval | default "10s" }}
+      timeout: {{ .Values.aichat.healthcheck.timeout | default "5s" }}
+      retries: {{ .Values.aichat.healthcheck.retries | default 3 }}
+      start_period: {{ .Values.aichat.healthcheck.start_period | default "10s" }}
 
   librechat:
     image: ghcr.io/danny-avila/librechat:v0.8.6-rc1
@@ -206,10 +206,10 @@ services:
 
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO /dev/null http://127.0.0.1:3000/ || exit 1']
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
+      interval: {{ .Values.aichat.healthcheck.interval | default "30s" }}
+      timeout: {{ .Values.aichat.healthcheck.timeout | default "10s" }}
+      retries: {{ .Values.aichat.healthcheck.retries | default 5 }}
+      start_period: {{ .Values.aichat.healthcheck.start_period | default "90s" }}
 
   librechat-mongo:
     image: mongo:7.0
@@ -224,8 +224,8 @@ services:
 
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
+      interval: {{ .Values.aichat.healthcheck.interval | default "10s" }}
+      timeout: {{ .Values.aichat.healthcheck.timeout | default "5s" }}
+      retries: {{ .Values.aichat.healthcheck.retries | default 3 }}
+      start_period: {{ .Values.aichat.healthcheck.start_period | default "20s" }}
 {{- end }}

@@ -18,6 +18,23 @@ scirius:
     type: bool
     usage: Enable debug mode
     default: false
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for Scirius
+      default: "10s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for Scirius
+      default: "1s"
+    retries:
+      type: int
+      usage: Healthcheck retries for Scirius
+      default: 5
+    start_period:
+      type: string
+      usage: Healthcheck start period for Scirius
+      default: "5m"
   celery:
     type: optional
     usage: Enable Celery ?

@@ -30,10 +30,10 @@ services:
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         healthcheck:
             test: ['CMD-SHELL', 'curl --silent --fail localhost:9200/_cluster/health || exit 1']
-            interval: 10s
-            timeout: 5s
-            retries: 3
-            start_period: 30s
+            interval: {{ .Values.opensearch.healthcheck.interval | default "10s" }}
+            timeout: {{ .Values.opensearch.healthcheck.timeout | default "5s" }}
+            retries: {{ .Values.opensearch.healthcheck.retries | default 3 }}
+            start_period: {{ .Values.opensearch.healthcheck.start_period | default "30s" }}
         environment:
             - plugins.security.disabled=true
             - discovery.type=single-node
@@ -76,10 +76,10 @@ services:
             - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
         healthcheck:
             test: ['CMD-SHELL', 'curl --silent --fail localhost:5601 || exit 1']
-            interval: 30s
-            timeout: 5s
-            retries: 3
-            start_period: 30s
+            interval: {{ .Values.opensearch.dashboards_healthcheck.interval | default "30s" }}
+            timeout: {{ .Values.opensearch.dashboards_healthcheck.timeout | default "5s" }}
+            retries: {{ .Values.opensearch.dashboards_healthcheck.retries | default 3 }}
+            start_period: {{ .Values.opensearch.dashboards_healthcheck.start_period | default "30s" }}
         depends_on:
             opensearch:
                 condition: service_healthy

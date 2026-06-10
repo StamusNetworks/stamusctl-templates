@@ -11,6 +11,23 @@ grafana:
     type: string
     usage: Port to expose Grafana on host (only used if openPort is true)
     default: "3000"
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for Grafana
+      default: "10s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for Grafana
+      default: "5s"
+    retries:
+      type: int
+      usage: Healthcheck retries for Grafana
+      default: 3
+    start_period:
+      type: string
+      usage: Healthcheck start period for Grafana
+      default: "60s"
   adminPassword:
     type: string
     usage: Grafana admin password (default user is admin)

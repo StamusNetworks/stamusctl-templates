@@ -16,10 +16,10 @@ services:
             - victoriametrics-data:/victoria-metrics-data
         healthcheck:
             test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:8428/health || exit 1']
-            interval: 10s
-            timeout: 5s
-            retries: 3
-            start_period: 30s
+            interval: {{ .Values.victoriametrics.healthcheck.interval | default "10s" }}
+            timeout: {{ .Values.victoriametrics.healthcheck.timeout | default "5s" }}
+            retries: {{ .Values.victoriametrics.healthcheck.retries | default 3 }}
+            start_period: {{ .Values.victoriametrics.healthcheck.start_period | default "30s" }}
         {{- if or .Values.global.exposePorts .Values.victoriametrics.openPort }}
         ports:
             - {{ .Values.victoriametrics.port | default "8428" }}:8428

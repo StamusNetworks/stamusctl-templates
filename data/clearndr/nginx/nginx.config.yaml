@@ -1,4 +1,17 @@
 nginx:
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for NGINX
+      default: "10s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for NGINX
+      default: "2s"
+    retries:
+      type: int
+      usage: Healthcheck retries for NGINX
+      default: 5
   ssl:
     enabled:
       type: bool

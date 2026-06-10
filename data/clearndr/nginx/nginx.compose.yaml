@@ -39,9 +39,9 @@ services:
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         healthcheck:
             test: ['CMD', 'service', 'nginx', 'status']
-            interval: 10s
-            timeout: 2s
-            retries: 5
+            interval: {{ .Values.nginx.healthcheck.interval | default "10s" }}
+            timeout: {{ .Values.nginx.healthcheck.timeout | default "2s" }}
+            retries: {{ .Values.nginx.healthcheck.retries | default 5 }}
         volumes:
             - scirius-static:/static/:ro
             {{- if .Values.otel.enabled }}

@@ -49,9 +49,9 @@ services:
                 condition: service_healthy
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://scirius:8000/arkime']
-            interval: 15s
-            timeout: 5s
-            retries: 3
+            interval: {{ .Values.arkime.healthcheck.interval | default "15s" }}
+            timeout: {{ .Values.arkime.healthcheck.timeout | default "5s" }}
+            retries: {{ .Values.arkime.healthcheck.retries | default 3 }}
         configs:
             - source: arkime-config
               target: /opt/arkime/etc/config.ini

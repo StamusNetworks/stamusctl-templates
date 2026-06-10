@@ -6,6 +6,19 @@ arkime:
     type: bool
     usage: Open port for Arkime Viewer ?
     default: false
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for Arkime
+      default: "15s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for Arkime
+      default: "5s"
+    retries:
+      type: int
+      usage: Healthcheck retries for Arkime
+      default: 3
 
 evebox:
   type: optional

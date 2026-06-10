@@ -15,6 +15,23 @@ victoriametrics:
     type: string
     usage: Data retention period
     default: "90d"
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for VictoriaMetrics
+      default: "10s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for VictoriaMetrics
+      default: "5s"
+    retries:
+      type: int
+      usage: Healthcheck retries for VictoriaMetrics
+      default: 3
+    start_period:
+      type: string
+      usage: Healthcheck start period for VictoriaMetrics
+      default: "30s"
   openPort:
     type: bool
     usage: Expose VictoriaMetrics HTTP port (8428) on host

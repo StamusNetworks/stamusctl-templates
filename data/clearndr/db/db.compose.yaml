@@ -29,9 +29,9 @@ services:
             {{- end }}
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready -U selks']
-            interval: 5s
-            timeout: 1s
-            retries: 5
+            interval: {{ .Values.db.healthcheck.interval | default "5s" }}
+            timeout: {{ .Values.db.healthcheck.timeout | default "1s" }}
+            retries: {{ .Values.db.healthcheck.retries | default 5 }}
         networks:
             network:
 
@@ -42,9 +42,9 @@ services:
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         healthcheck:
             test: rabbitmq-diagnostics -q ping
-            interval: 30s
-            timeout: 30s
-            retries: 3
+            interval: {{ .Values.rabbitmq.healthcheck.interval | default "30s" }}
+            timeout: {{ .Values.rabbitmq.healthcheck.timeout | default "30s" }}
+            retries: {{ .Values.rabbitmq.healthcheck.retries | default 3 }}
         {{- if .Values.rabbitmq.openport }}
         ports:
             - 5672:5672

@@ -11,6 +11,23 @@ suricata:
     type: string
     usage: Additional configuration for Suricata
     default: " "
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for Suricata
+      default: "10s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for Suricata
+      default: "5s"
+    retries:
+      type: int
+      usage: Healthcheck retries for Suricata
+      default: 30
+    start_period:
+      type: string
+      usage: Healthcheck start period for Suricata
+      default: "60s"
   unixSocket:
     enabled:
       type: bool

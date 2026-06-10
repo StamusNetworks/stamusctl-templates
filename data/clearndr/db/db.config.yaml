@@ -1,3 +1,18 @@
+db:
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for PostgreSQL
+      default: "5s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for PostgreSQL
+      default: "1s"
+    retries:
+      type: int
+      usage: Healthcheck retries for PostgreSQL
+      default: 5
+
 rabbitmq:
   type: optional
   usage: Enable RabbitMQ
@@ -6,3 +21,16 @@ rabbitmq:
     type: bool
     usage: Expose RabbitMQ port
     default: false
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for RabbitMQ
+      default: "30s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for RabbitMQ
+      default: "30s"
+    retries:
+      type: int
+      usage: Healthcheck retries for RabbitMQ
+      default: 3

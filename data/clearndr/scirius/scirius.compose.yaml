@@ -24,10 +24,10 @@ services:
         container_name: {{template "base-name" .}}-scirius-{{ .Release.seed }}
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         healthcheck:
-            interval: 10s
-            timeout: 1s
-            retries: 5
-            start_period: 5m
+            interval: {{ .Values.scirius.healthcheck.interval | default "10s" }}
+            timeout: {{ .Values.scirius.healthcheck.timeout | default "1s" }}
+            retries: {{ .Values.scirius.healthcheck.retries | default 5 }}
+            start_period: {{ .Values.scirius.healthcheck.start_period | default "5m" }}
         environment:
             - SECRET_KEY="{{.scirius.token | default (randAlphaNum 64)}}"
             - DEBUG={{.Values.scirius.debug | default "False"}}
@@ -96,10 +96,10 @@ services:
             - SURICATA_UNIX_SOCKET=/var/run/suricata/suricata-command.socket
         healthcheck:
             test: ["CMD-SHELL", "grep -q suri_reloader.py /proc/1/cmdline || exit 1"]
-            interval: 10s
-            timeout: 1s
-            retries: 5
-            start_period: 5m
+            interval: {{ .Values.scirius.healthcheck.interval | default "10s" }}
+            timeout: {{ .Values.scirius.healthcheck.timeout | default "1s" }}
+            retries: {{ .Values.scirius.healthcheck.retries | default 5 }}
+            start_period: {{ .Values.scirius.healthcheck.start_period | default "5m" }}
         configs:
             - source: suricata-reloader-start-sh
               target: /start-suri-reloader.sh
@@ -150,9 +150,9 @@ services:
                     'CMD-SHELL',
                     'celery --broker=amqp://guest:guest@rabbitmq:5672// -A suricata inspect ping',
                 ]
-            interval: 30s
-            timeout: 10s
-            retries: 3
+            interval: {{ .Values.scirius.healthcheck.interval | default "30s" }}
+            timeout: {{ .Values.scirius.healthcheck.timeout | default "10s" }}
+            retries: {{ .Values.scirius.healthcheck.retries | default 3 }}
         networks:
             network:
         depends_on:
@@ -190,9 +190,9 @@ services:
                     'CMD-SHELL',
                     'celery --broker=amqp://guest:guest@rabbitmq:5672// -A suricata inspect ping',
                 ]
-            interval: 30s
-            timeout: 10s
-            retries: 3
+            interval: {{ .Values.scirius.healthcheck.interval | default "30s" }}
+            timeout: {{ .Values.scirius.healthcheck.timeout | default "10s" }}
+            retries: {{ .Values.scirius.healthcheck.retries | default 3 }}
         networks:
             network:
         depends_on:

@@ -31,6 +31,23 @@ aichat:
     type: string
     usage: Display name for the remote LLM endpoint
     default: ""
+  healthcheck:
+    interval:
+      type: string
+      usage: Healthcheck interval for LibreChat
+      default: "30s"
+    timeout:
+      type: string
+      usage: Healthcheck timeout for LibreChat
+      default: "10s"
+    retries:
+      type: int
+      usage: Healthcheck retries for LibreChat
+      default: 5
+    start_period:
+      type: string
+      usage: Healthcheck start period for LibreChat
+      default: "90s"
   default_user_email:
     type: string
     usage: Default user email (auto-created on first start)

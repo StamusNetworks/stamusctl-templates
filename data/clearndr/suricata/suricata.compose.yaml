@@ -26,10 +26,10 @@ services:
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         healthcheck:
             test: ["CMD-SHELL", "test -S /var/run/suricata/suricata-command.socket"]
-            interval: 10s
-            timeout: 5s
-            retries: 30
-            start_period: 60s
+            interval: {{ .Values.suricata.healthcheck.interval | default "10s" }}
+            timeout: {{ .Values.suricata.healthcheck.timeout | default "5s" }}
+            retries: {{ .Values.suricata.healthcheck.retries | default 30 }}
+            start_period: {{ .Values.suricata.healthcheck.start_period | default "60s" }}
         configs:
             - source: suricata-new-entrypoint
               target: /new_entrypoint.sh

@@ -68,10 +68,10 @@ services:
             {{- end }}
         healthcheck:
             test: ['CMD-SHELL', 'curl --silent --fail http://localhost:3000/api/health || exit 1']
-            interval: 10s
-            timeout: 5s
-            retries: 3
-            start_period: 60s
+            interval: {{ .Values.grafana.healthcheck.interval | default "10s" }}
+            timeout: {{ .Values.grafana.healthcheck.timeout | default "5s" }}
+            retries: {{ .Values.grafana.healthcheck.retries | default 3 }}
+            start_period: {{ .Values.grafana.healthcheck.start_period | default "60s" }}
         depends_on:
             opensearch:
                 condition: service_healthy
