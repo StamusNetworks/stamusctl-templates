@@ -17,7 +17,9 @@ ARG path=selks
 ARG TEMPLATE_VERSION=1.0.0
 
 COPY /data/$path /data
-RUN echo "${TEMPLATE_VERSION}" > /data/version
+# printf, not echo: echo appends a trailing newline, which leaked into the
+# baked version file (1.2.0 -> "1.2.0\n") and downstream into stamusctl.
+RUN printf '%s' "${TEMPLATE_VERSION}" > /data/version
 COPY --from=Builder /src/dist /sbin/
 
 ENTRYPOINT [ "bin/sh", "-c" ]
