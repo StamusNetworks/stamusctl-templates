@@ -27,11 +27,13 @@ services:
     evebox:
         image: jasonish/evebox:{{ (.Values.evebox).version | default "master" }}
         container_name: {{template "base-name" .}}-evebox-{{ .Release.seed }}
-        command: ['-e', 'http://opensearch:9200']
+        command: ['-e', 'http://opensearch:9200', '--pcap-directory', '/var/log/suricata/fpc']
         restart: {{ .Values.globals.restartmode | default "unless-stopped" }}
         environment:
             - EVEBOX_HTTP_TLS_ENABLED=false
             - EVEBOX_AUTHENTICATION_REQUIRED=false
+        volumes:
+            - {{ .Release.location }}/fpc:/var/log/suricata/fpc:ro
         networks:
             network:
     {{- end }}
